@@ -1,0 +1,110 @@
+K-NanoMFA v1.4-en verification record
+Generated: 22 July 2026
+
+SCOPE
+- Product-informed market-input conversion, product-specific dynamic trajectories, uncertainty, evidence, result contribution, scenario portability, and retained v1.3 functions.
+- Direct ENM input remains the default compatibility mode.
+
+STATIC COMPATIBILITY AUDIT
+- v1.3 HTML IDs: 290
+- v1.4 HTML IDs: 307
+- Missing v1.3 IDs: 0
+- Added v1.4 IDs: 17
+- Duplicate v1.4 IDs: 0
+- data.js unchanged from v1.3: True (118da713c97890c77cb1616fab27af1d5ba14bde6b51b5cc597f2aa69c721c74)
+- advanced.js unchanged from v1.3: True (e0c5260ec8fbb106d248f2c83ee90913edbc85c626cd6a32fd496e78ff151967)
+
+JAVASCRIPT SYNTAX
+PASS  node -c data.js
+PASS  node -c engine.js
+PASS  node -c product_inventory.js
+PASS  node -c app.js
+PASS  node -c geography.js
+PASS  node -c advanced.js
+PASS  node -c mixture.js
+PASS  node -c test_engine.js
+PASS  node -c test_regression_v121.js
+PASS  node -c test_custom_material.js
+PASS  node -c test_geography.js
+PASS  node -c test_advanced.js
+PASS  node -c test_mixture.js
+PASS  node -c test_product_inventory.js
+
+NUMERICAL AND REGRESSION TESTS
+---- test_engine.js ----
+KR Republic of Korea OK
+CN China OK
+US United States OK
+JP Japan OK
+DE Germany OK
+FR France OK
+GB United Kingdom OK
+IN India OK
+CA Canada OK
+AU Australia OK
+All country-domain, material, mass-balance and PEC tests passed.
+PASS  node test_engine.js
+---- test_regression_v121.js ----
+v1.2.1 regression tests passed.
+PASS  node test_regression_v121.js
+---- test_custom_material.js ----
+Custom-material engine test passed.
+PASS  node test_custom_material.js
+---- test_geography.js ----
+Custom-geography registry, validation, static MFA, dynamic MFA, mass-balance and PEC tests passed.
+PASS  node test_geography.js
+---- test_advanced.js ----
+Advanced reconciliation, stock-driven MFA, multimedia fate, and validation tests passed.
+PASS  node test_advanced.js
+---- test_mixture.js ----
+Multi-material deterministic, formulation, dynamic, and joint uncertainty tests passed. {
+  totalWater: 0.00019888282794918049,
+  hi: 0.005202337331693695,
+  P50: 0.005461293977629845
+}
+PASS  node test_mixture.js
+---- test_product_inventory.js ----
+Product-informed static, dynamic, uncertainty, compatibility, and mass-balance tests passed. {
+  static_total_kg_y: 322.5,
+  final_dynamic_input_kg_y: 438.87588300000004
+}
+PASS  node test_product_inventory.js
+
+HEADLESS BROWSER INTEGRATION
+---- test_browser_v13.py ----
+{
+  "workspaces": 10,
+  "custom_domains": 2,
+  "mass_balance_closure_pct": 100.00000000000004,
+  "status": "passed"
+}
+PASS  python test_browser_v13.py
+---- test_browser_v14.py ----
+{
+  "workspaces": 10,
+  "guided_stages": 5,
+  "direct_closure_pct": 100.00000000000003,
+  "product_static_input_kg_y": 310,
+  "product_static_closure_pct": 99.99999999999997,
+  "dynamic_closure_min_pct": 100,
+  "dynamic_closure_max_pct": 100.00000000000003,
+  "custom_country": "VT",
+  "status": "passed"
+}
+PASS  python test_browser_v14.py
+
+VERIFIED OUTCOMES
+- All ten v1.3 workspaces and five guided stages remain available.
+- No v1.3 HTML element ID was removed.
+- Bundled data.js and advanced.js are byte-identical to v1.3.
+- v1.2.1 numerical regression tests pass.
+- All ten bundled materials pass product-inventory initialization, static MFA, dynamic MFA, and mass-balance tests.
+- Product mass, unit-sales, area-loading, volume-concentration, and direct-ENM bases are verified.
+- Product-specific static and dynamic Monte Carlo paths are verified with fixed seeds.
+- Product-informed scenario JSON roundtrip, custom geography, advanced workspace, and multi-material capture are verified.
+- Product-informed and direct-input browser runs maintain mass-balance closure at approximately 100%.
+
+SCIENTIFIC BOUNDARIES
+- Product-input uncertainty uses independent lognormal terms in v1.4.
+- Alternative distribution families and product-parameter correlations are not implemented.
+- Nanoform state-transition mechanics remain outside v1.4.

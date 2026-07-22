@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use K-NanoMFA in research, please cite the software and state the version, country/domain, nanomaterial, model mode, scenario date, and advanced modules used."
+title: "K-NanoMFA: Country-resolved nanomaterial material-flow analysis, calibration, and environmental fate platform"
+type: software
+authors:
+  - family-names: Kim
+    given-names: Younghun
+    affiliation: Kwangwoon University
+    email: korea1@kw.ac.kr
+version: "2.0.1-en"
+date-released: 2026-07-22
+license: MIT
+repository-code: "Source archive distributed with the web application"
+abstract: "A browser-based research platform for product-informed nanomaterial inventories, optional nanoform-state accounting and dynamic nanoform-resolved environmental fate, deterministic and probabilistic static MFA, inflow- and stock-driven dynamic MFA, country and subnational domains, bundled and custom nanomaterials, trade-balanced input, environmental-media PECs, data reconciliation, Bayesian calibration, reduced-form multimedia fate, validation, uncertainty and sensitivity analysis, and screening life-cycle burden comparison."
+keywords:
+  - material flow analysis
+  - product inventory
+  - nano-enabled products
+  - nanomaterials
+  - nanoform state
+  - transformation state
+  - dynamic MFA
+  - stock-driven MFA
+  - data reconciliation
+  - Bayesian calibration
+  - predicted environmental concentration
+  - multimedia fate
+  - kinetic fate
+  - dissolution
+  - aggregation
+  - sedimentation
+  - uncertainty analysis

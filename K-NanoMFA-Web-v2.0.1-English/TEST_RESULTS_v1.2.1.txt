@@ -1,0 +1,28 @@
+K-NanoMFA v1.2.1 validation log
+Date: 2026-07-18
+
+$ node --check data.js engine.js app.js advanced.js mixture.js (run individually)
+Syntax checks passed.
+
+KR Republic of Korea OK
+CN China OK
+US United States OK
+JP Japan OK
+DE Germany OK
+FR France OK
+GB United Kingdom OK
+IN India OK
+CA Canada OK
+AU Australia OK
+All country-domain, material, mass-balance and PEC tests passed.
+Advanced reconciliation, stock-driven MFA, multimedia fate, and validation tests passed.
+Custom-material engine test passed.
+Multi-material deterministic, formulation, dynamic, and joint uncertainty tests passed. {
+  totalWater: 0.00019888282794918049,
+  hi: 0.005202337331693695,
+  P50: 0.005461293977629845
+}
+v1.2.1 regression tests passed.
+
+Static DOM audit passed: 245 unique IDs and 219 referenced IDs.
+Headless Chromium integration test passed (see CODE_REVIEW_v1.2.1.md for scope).

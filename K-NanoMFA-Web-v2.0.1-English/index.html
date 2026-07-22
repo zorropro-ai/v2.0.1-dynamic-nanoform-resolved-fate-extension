@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Product-informed, country-resolved static and dynamic material-flow analysis and screening PECs for nanomaterials" />
+  <meta name="author" content="Prof. Younghun Kim, Kwangwoon University" />
+  <meta name="copyright" content="Copyright © 2026 Younghun Kim" />
+  <meta name="application-version" content="2.0.1-en" />
+  <title>K-NanoMFA v2.0.1</title>
+  <link rel="stylesheet" href="styles.css?v=2.0.1" />
+  <script src="plotly.min.js?v=2.0.1"></script>
+</head>
+<body>
+<header class="topbar">
+  <div>
+    <div class="eyebrow">Country-resolved Nanomaterial Flow Analysis</div>
+    <h1>K-NanoMFA <span class="version-badge">v2.0.1</span></h1>
+    <p>Static · Probabilistic · Dynamic · Product-informed · Evidence-graded · Custom geographic domains</p>
+  </div>
+  <div class="top-actions">
+    <label class="view-control">Interface view<select id="interfaceView"><option value="guided">Guided stages</option><option value="all">All workspaces</option></select></label>
+    <a class="button ghost" href="K-NanoMFA_User_Manual_v1.2.docx">User manual</a>
+    <a class="button ghost" href="MANUAL_ADDENDUM_v2.0.1.md" target="_blank" rel="noopener">v2.0.1 addendum</a>
+    <button id="saveLocalBtn" class="ghost">Save in browser</button>
+    <button id="exportScenarioBtn" class="ghost">Export scenario JSON</button>
+    <label class="button ghost file-label">Import JSON<input id="importScenario" type="file" accept="application/json" hidden></label>
+  </div>
+</header>
+
+<main class="layout">
+<aside class="sidebar">
+  <section class="panel sticky">
+    <h2>Project settings</h2>
+    <label>Assessment mode<select id="assessmentMode"><option value="single">Single nanomaterial</option><option value="multi">Multiple nanomaterials / co-exposure</option></select></label>
+    <label>Model mode
+      <select id="modelMode">
+        <option value="static_deterministic">Static deterministic MFA</option>
+        <option value="static_probabilistic">Static probabilistic MFA</option>
+        <option value="dynamic_probabilistic">Dynamic probabilistic MFA</option>
+      </select>
+    </label>
+    <label>Target nanomaterial<select id="materialSelect"></select></label>
+    <p id="materialDescription" class="small muted"></p>
+    <label>Country domain<select id="countrySelect"></select></label>
+    <button id="manageCustomCountryBtn" class="ghost wide compact-action">Create custom country</button>
+    <label>National or subnational domain<select id="regionSelect"></select></label>
+    <label>Market-input definition
+      <select id="marketInputMode">
+        <option value="direct_enm">Direct nanomaterial mass (legacy compatible)</option>
+        <option value="product_inventory">Product-informed inventory</option>
+      </select>
+    </label>
+    <div id="marketInputModeBadge" class="input-mode-badge">Direct ENM input (legacy compatible)</div>
+    <label class="checkbox-row"><input id="countryWasteToggle" type="checkbox" checked><span>Couple EoL routes to the selected-country screening preset</span></label>
+    <label>Market-input geography
+      <select id="inputBasis">
+        <option value="direct_region">Entered input applies directly to the selected region</option>
+        <option value="national_population">National input scaled by population share</option>
+        <option value="national_sewer_population">National input scaled by sewered-population share</option>
+        <option value="national_wwtp_flow">National input scaled by wastewater-flow share</option>
+      </select>
+    </label>
+    <p id="inputBasisHelp" class="small muted"></p>
+    <div id="staticSidebarFields">
+      <label id="legacyStaticMassLabel">Entered annual nanomaterial input (kg/y)<input id="totalMass" type="number" min="0" step="10" value="1000"></label>
+      <label>Base year<input id="baseYear" type="number" value="2024" min="2000" max="2100"></label>
+    </div>
+    <div id="effectiveInputBox" class="effective-input"></div>
+    <label>Display mass unit<select id="displayUnit"><option value="kg">kg</option><option value="t">t</option></select></label>
+    <button id="calculateBtn" class="primary wide">Run model</button>
+    <div id="validationBox" class="validation ok">Review the inputs and run the model.</div>
+    <div class="small muted">Product shares, release factors, lifetimes, treatment coefficients, and environmental residence times are editable screening priors.</div>
+  </section>
+</aside>
+
+<div class="content">
+<div class="workspace-navigation">
+  <nav class="stage-tabs" aria-label="Guided analysis stages">
+    <button class="stage-tab active" data-stage="study"><span>1</span>Study &amp; material</button>
+    <button class="stage-tab" data-stage="lifecycle"><span>2</span>Product inventory, waste &amp; environment</button>
+    <button class="stage-tab" data-stage="evidence"><span>3</span>Evidence &amp; uncertainty</button>
+    <button class="stage-tab" data-stage="results"><span>4</span>Results &amp; compare</button>
+    <button class="stage-tab" data-stage="expert"><span>5</span>Expert &amp; reference</button>
+  </nav>
+  <div class="workspace-heading"><div><b id="stageTitle">Study &amp; material</b><span id="stageDescription">Define the model, material, geography, and multi-material project.</span></div><button id="showAllWorkspacesBtn" class="ghost compact-action">Show all workspaces</button></div>
+  <nav class="tabs workspace-tabs" aria-label="Analysis workspaces">
+    <button class="tab active" data-tab="model" data-stage="study">Model setup</button>
+    <button class="tab" data-tab="mixture" data-stage="study">Multi-material / mixtures</button>
+    <button class="tab" data-tab="lifecycle" data-stage="lifecycle">Products and life cycle</button>
+    <button class="tab" data-tab="treatment" data-stage="lifecycle">Treatment facilities</button>
+    <button class="tab" data-tab="environment" data-stage="lifecycle">Geography and PEC</button>
+    <button class="tab" data-tab="quality" data-stage="evidence">Evidence, QA and sensitivity</button>
+    <button class="tab" data-tab="uncertainty" data-stage="evidence">Uncertainty</button>
+    <button class="tab" data-tab="results" data-stage="results">Results</button>
+    <button class="tab" data-tab="advanced" data-stage="expert">Advanced MFA and fate</button>
+    <button class="tab" data-tab="method" data-stage="expert">Method and limitations</button>
+  </nav>
+</div>
+
+<section id="tab-model" class="tab-page active">
+  <div class="panel guide-panel">
+    <div class="section-title"><div><h2>Guided workflow</h2><p>Five stages organize every original v1.2.1 workspace without removing any calculation, evidence, mixture, validation, or export function.</p></div><a class="button ghost" href="K-NanoMFA_User_Manual_v1.2.docx">Open user manual</a></div>
+    <div class="workflow-steps five-stage-workflow">
+      <button class="workflow-step" data-guide-stage="study"><span>1</span><b>Study &amp; material</b><small>Select the model, material, built-in or custom country/domain, input basis, and multi-material scope.</small></button>
+      <button class="workflow-step" data-guide-stage="lifecycle"><span>2</span><b>Product inventory, waste &amp; environment</b><small>Review product releases, lifetimes, treatment coefficients, sludge routes, geographic statistics, and PEC settings.</small></button>
+      <button class="workflow-step" data-guide-stage="evidence"><span>3</span><b>Evidence &amp; uncertainty</b><small>Document provenance, data quality, nanoform allocations, uncertainty, sensitivity, and benchmark applicability.</small></button>
+      <button class="workflow-step" data-guide-stage="results"><span>4</span><b>Results &amp; compare</b><small>Run the model and inspect mass balance, flows, stocks, PECs, co-occurrence, stored runs, and exports.</small></button>
+      <button class="workflow-step" data-guide-stage="expert"><span>5</span><b>Expert &amp; reference</b><small>Use trade, stock-driven inversion, reconciliation, calibration, multimedia fate, validation, burden, and method notes.</small></button>
+    </div>
+    <div id="workflowStatus" class="next-action"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Choose the temporal and uncertainty structure</h2>
+    <div class="model-cards">
+      <button class="model-card selected" data-mode="static_deterministic"><b>Static deterministic MFA</b><span>One year · fixed parameters · no delayed product stock</span><div class="mini-flow">Input → products → release/EoL → treatment → destinations</div></button>
+      <button class="model-card" data-mode="static_probabilistic"><b>Static probabilistic MFA</b><span>One year · sampled parameters · P5/P50/P95</span><div class="mini-flow">Parameter distributions ⇢ repeated static mass balances</div></button>
+      <button class="model-card" data-mode="dynamic_probabilistic"><b>Dynamic probabilistic MFA</b><span>Multiple years · cohorts, stocks, delayed EoL, circular loops</span><div class="mini-flow">Annual inputs → cohorts/stocks → delayed releases → treatment</div></button>
+    </div>
+  </div>
+
+  <div id="customMaterialPanel" class="panel custom-material-panel" hidden>
+    <div class="section-title">
+      <div><h2>Custom nanomaterial definition</h2><p>Start from the closest bundled material, then revise every relevant life-cycle and fate variable. The template is only an initialization aid and does not establish scientific equivalence.</p></div>
+      <div class="button-row"><button id="initializeCustomBtn" class="primary">Initialize from template</button><button id="applyCustomIdentityBtn" class="ghost">Apply identity and evidence</button></div>
+    </div>
+    <div class="form-grid compact">
+      <label>Custom material name<input id="customMaterialName" type="text" value="Custom nanomaterial" maxlength="120"></label>
+      <label>Initialization template<select id="customTemplateSelect"></select></label>
+      <label>Multimedia fate behavior<select id="customFatePreset"><option>Persistent carbonaceous</option><option>Persistent mineral oxide</option><option>Dissolving metal / oxide</option><option>Biodegradable nanomaterial</option></select></label>
+      <label>Optional literature benchmark proxy<select id="customBenchmarkProxy"><option value="none">None — recommended unless directly justified</option></select></label>
+      <label>Evidence class<select id="customEvidenceClass"><option value="A">A — official statistic</option><option value="B">B — directly applicable peer-reviewed evidence</option><option value="C">C — peer-reviewed proxy</option><option value="D">D — harmonised screening proxy</option><option value="E" selected>E — expert or user assumption</option></select></label>
+      <label>Primary source or reference<input id="customSource" type="text" value="User-defined screening scenario"></label>
+      <label>Source URL or DOI<input id="customSourceUrl" type="url" placeholder="https://doi.org/... or source page"></label>
+    </div>
+    <label>Material description<textarea id="customMaterialDescription" rows="3">User-defined nanomaterial scenario. Initialize from the closest bundled material, then replace all relevant product, release, treatment, lifetime, fate, and evidence assumptions.</textarea></label>
+    <label>Evidence qualification and limitations<textarea id="customEvidenceNote" rows="3">No bundled material-specific evidence is assumed. Replace screening priors with project-specific data where available.</textarea></label>
+    <div class="button-row"><button id="saveCustomDefaultsBtn" class="ghost">Save current variables as custom defaults</button><button id="restoreCustomDefaultsBtn" class="ghost">Restore saved custom defaults</button></div>
+    <div id="customMaterialStatus" class="notice custom-status"></div>
+    <div class="custom-variable-map">
+      <b>Where to adjust the custom scenario</b>
+      <span><strong>Products and life cycle:</strong> product categories, allocation, use releases, EoL, lifetime, and Weibull timing.</span>
+      <span><strong>Treatment facilities:</strong> WWTP, incineration, landfill, recycling, reuse, biological treatment, and sludge routes.</span>
+      <span><strong>Geography and PEC:</strong> receiving-water, soil, sediment, and atmospheric capacities.</span>
+      <span><strong>Evidence, QA and sensitivity:</strong> release-form allocation, uncertainty CVs, data-quality scores, source notes, and sensitivity.</span>
+      <span><strong>Advanced MFA and fate:</strong> trade, stock-driven mode, fate rates, calibration, validation, and burden factors.</span>
+    </div>
+  </div>
+
+
+  <div id="customGeoPanel" class="panel custom-country-panel" hidden>
+    <div class="section-title">
+      <div><h2>Custom country and geographic-domain manager</h2><p>Create a national domain and optional subnational domains. These entries use the same MFA, uncertainty, mixture, advanced-fate, validation, and export functions as bundled countries.</p></div>
+      <div class="button-row"><button id="newCustomGeoBtn" class="ghost">New country</button><button id="saveCustomGeoBtn" class="primary">Save country/domain</button><button id="closeCustomGeoBtn" class="ghost">Close</button></div>
+    </div>
+    <div class="geo-editor-grid">
+      <div class="geo-editor-section">
+        <h3>Country identity and provenance</h3>
+        <div class="form-grid compact geo-identity-grid">
+          <label>Country code<input id="customGeoCode" type="text" maxlength="12" placeholder="e.g., NZ"></label>
+          <label>Country name<input id="customGeoCountryName" type="text" placeholder="New Zealand"></label>
+          <label>Short name<input id="customGeoShortName" type="text" placeholder="New Zealand"></label>
+          <label>Reference year<input id="customGeoReferenceYear" type="number" min="1900" max="2200" value="2026"></label>
+          <label class="span-2">Data basis / source note<input id="customGeoBasis" type="text" value="User-defined national statistics and screening assumptions"></label>
+          <label class="span-2">Source URL or DOI<input id="customGeoSourceUrl" type="url" placeholder="https://..."></label>
+        </div>
+      </div>
+      <div class="geo-editor-section">
+        <div class="section-title subheading"><div><h3>Domain editor</h3><p>Exactly one national domain is required. Additional subnational domains can be added after the national definition is saved.</p></div><div class="button-row"><button id="addCustomDomainBtn" class="ghost">Add subnational domain</button><button id="deleteCustomDomainBtn" class="danger-btn">Delete domain</button></div></div>
+        <label>Saved or new domain<select id="customGeoDomainSelect"></select></label>
+        <div class="form-grid compact geo-domain-grid">
+          <label>Domain name<input id="customGeoDomainName" type="text"></label>
+          <label>Domain ID<input id="customGeoDomainId" type="text" placeholder="NZ-national"></label>
+          <label>Domain level<select id="customGeoDomainLevel"><option value="national">National</option><option value="subnational">Subnational</option></select></label>
+          <label>Data-quality flag<input id="customGeoDataQuality" type="text" value="user_defined"></label>
+          <label>Population<input id="customGeoPopulation" type="number" min="1" step="1"></label>
+          <label>Area (km²)<input id="customGeoArea" type="number" min="0" step="any"></label>
+          <label>Sewered population<input id="customGeoSewerPopulation" type="number" min="0" step="1"></label>
+          <label>Wastewater flow (m³/y)<input id="customGeoWwtpFlow" type="number" min="0" step="any"></label>
+          <label>Dry sludge production (t/y)<input id="customGeoSludgeDry" type="number" min="0" step="any"></label>
+          <label>Effective freshwater flow (m³/s)<input id="customGeoRiverFlow" type="number" min="0" step="any"></label>
+          <label>Wet sludge production (t/y, optional)<input id="customGeoSludgeWet" type="number" min="0" step="any"></label>
+          <label>Sludge moisture (%, optional)<input id="customGeoSludgeMoisture" type="number" min="0" max="100" step="any"></label>
+          <label class="span-2">Domain source note<input id="customGeoDomainSource" type="text" value="User-defined geographic data"></label>
+        </div>
+      </div>
+    </div>
+    <div class="two-col geo-route-grid">
+      <div class="geo-editor-section"><h3>Country end-of-life preset (%)</h3><div class="form-grid compact route-grid">
+        <label>Incineration<input id="customGeoWaste_incineration_pct" type="number" min="0" max="100" value="20"></label><label>Landfill<input id="customGeoWaste_landfill_pct" type="number" min="0" max="100" value="30"></label><label>Recycling<input id="customGeoWaste_recycling_pct" type="number" min="0" max="100" value="35"></label><label>Reuse<input id="customGeoWaste_reuse_pct" type="number" min="0" max="100" value="5"></label><label>Biological treatment<input id="customGeoWaste_biological_treatment_pct" type="number" min="0" max="100" value="10"></label>
+      </div></div>
+      <div class="geo-editor-section"><h3>Sewage-sludge preset (%)</h3><div class="form-grid compact route-grid">
+        <label>Incineration<input id="customGeoSludge_incineration" type="number" min="0" max="100" value="20"></label><label>Landfill<input id="customGeoSludge_landfill" type="number" min="0" max="100" value="20"></label><label>Soil / compost<input id="customGeoSludge_soil_compost" type="number" min="0" max="100" value="45"></label><label>Fuel / product feedstock<input id="customGeoSludge_fuel_product_feedstock" type="number" min="0" max="100" value="10"></label><label>Other<input id="customGeoSludge_other_unclassified" type="number" min="0" max="100" value="5"></label>
+      </div></div>
+    </div>
+    <div id="customGeoStatus" class="notice custom-status"></div>
+    <div class="button-row geo-export-row"><button id="exportCustomGeoBtn" class="ghost">Export custom geography JSON</button><label class="button ghost file-label">Import custom geography JSON<input id="importCustomGeo" type="file" accept="application/json" hidden></label><button id="deleteCustomGeoBtn" class="danger-btn">Delete custom country</button></div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="section-title"><div><h2>Geographic calculation basis</h2><p>The selected country or subnational domain controls effective market input, wastewater and sludge denominators, receiving-water flow, soil and sediment capacity, atmospheric volume, and—when enabled—country-specific waste-management routes.</p></div></div>
+      <div id="regionSummary"></div>
+    </div>
+    <div class="panel">
+      <div class="section-title"><div><h2>Product categories</h2><p>The categories below are active in the selected nanomaterial scenario.</p></div><button id="editProductsBtn" class="ghost">Edit categories</button></div>
+      <div id="productSummary" class="product-summary"></div>
+    </div>
+  </div>
+
+  <div id="staticStructure" class="panel method-box">
+    <h2>Static model structure</h2>
+    <div class="structure-flow"><span>Effective regional annual input</span><i>→</i><span>Product allocation</span><i>→</i><span>Use-stage release</span><i>+</i><span>Same-year EoL</span><i>→</i><span>Waste treatment</span><i>→</i><span>Regional destinations and PECs</span></div>
+    <p>All mass not released during use reaches the end-of-life system in the selected year. Regional scaling is applied before product allocation.</p>
+  </div>
+
+  <div id="dynamicStructure" class="panel method-box" hidden>
+    <h2>Dynamic model structure</h2>
+    <div class="structure-flow"><span>Effective regional annual inputs</span><i>→</i><span>Product cohorts</span><i>→</i><span>In-use stock</span><i>→</i><span>Time-distributed use release and Weibull EoL</span><i>→</i><span>Treatment</span><i>↻</i><span>Reuse/recycling/landfill stocks</span></div>
+    <p>Each entered annual trajectory is interpreted using the selected market-input geography. Dynamic soil and sediment PECs use accumulated screening stocks with first-order residence-time loss.</p>
+  </div>
+
+  <div id="dynamicSettingsPanel" class="panel" hidden>
+    <div class="section-title"><div><h2>Dynamic horizon and market-input trajectory</h2><p>Direct-input mode uses the aggregate trajectory. Product-informed mode derives annual product-specific ENM inputs from market, content, and nano-enabled trends.</p></div><button id="generateTrajectoryBtn" class="ghost">Generate trajectory</button></div>
+    <div class="form-grid compact">
+      <label>Start year<input id="startYear" type="number" value="2015"></label>
+      <label>End year<input id="endYear" type="number" value="2035"></label>
+      <label id="legacyInitialInputLabel">Initial entered nanomaterial input (kg/y)<input id="initialInput" type="number" value="500" min="0"></label>
+      <label id="legacyGrowthLabel">Annual nanomaterial-input growth (%)<input id="annualGrowth" type="number" value="5" step="0.1"></label>
+      <label>Closed-loop share of recovered product (%)<input id="closedLoopPct" type="number" value="30" min="0" max="100"></label>
+      <label>Recycling delay (years)<input id="recyclingDelay" type="number" value="1" min="1"></label>
+      <label>Reuse delay (years)<input id="reuseDelay" type="number" value="3" min="1"></label>
+      <label>Initial landfill stock (kg)<input id="initialLandfillStock" type="number" value="0" min="0"></label>
+    </div>
+    <div class="table-wrap tall-sm"><table id="trajectoryTable"></table></div>
+  </div>
+</section>
+
+<section id="tab-lifecycle" class="tab-page">
+  <div id="productInventoryPanel" class="panel product-inventory-panel">
+    <div class="section-title">
+      <div><h2>Product-informed nanomaterial inventory</h2><p>Convert product mass, unit sales, coated area, or product volume into annual nanomaterial input. The calculated product contributions automatically replace allocation shares only when product-informed mode is active.</p></div>
+      <div class="button-row"><button id="initializeProductInventoryBtn" class="primary">Initialize from legacy input</button><button id="exportProductInventoryBtn" class="ghost">Export inventory JSON</button><label class="button ghost file-label">Import inventory JSON<input id="importProductInventory" type="file" accept="application/json" hidden></label></div>
+    </div>
+    <div id="directInputCompatibilityNotice" class="notice"><b>Direct ENM input is active.</b> All v1.2.1 and v1.3 behavior is retained. Select Product-informed inventory in Project settings to activate the fields below.</div>
+    <div id="productInventorySummary" class="quality-summary"></div>
+    <div id="productInventoryDetails" hidden>
+      <div class="table-wrap extra-wide"><table id="productInventoryTable" class="wide-table product-inventory-table"></table></div>
+      <details class="inventory-advanced" open><summary>Time trends, uncertainty, and evidence</summary><p class="small muted">Annual changes are relative percentages. Product-specific coefficients of variation are propagated in probabilistic runs as independent lognormal input terms.</p><div class="table-wrap extra-wide"><table id="productInventoryUncertaintyTable" class="wide-table product-inventory-uncertainty-table"></table></div></details>
+      <div class="notice">Product-informed calculations track nanomaterial mass, not total product mass. Product-market data remain screening inputs unless supported by documented inventories. Product-specific trajectories are used in dynamic inflow-driven runs; stock-driven inverse runs retain their aggregate solver and use the active product allocation.</div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="section-title">
+      <div><h2>Product-category settings</h2><p>Category names and use-stage releases remain editable. In direct-input mode, allocation shares are user inputs; in product-informed mode, they are calculated from product-specific ENM inputs.</p></div>
+      <div class="button-row"><button id="addProductBtn" class="ghost">Add product category</button><button id="normalizeProductsBtn" class="ghost">Normalize allocations</button></div>
+    </div>
+    <div class="table-wrap"><table id="productTable"></table></div>
+  </div>
+  <div id="lifetimePanel" class="panel" hidden>
+    <h2>Dynamic lifetime and release timing</h2>
+    <p>Mean lifetime and Weibull shape determine delayed EoL. The assigned use-stage release is spread over the specified duration.</p>
+    <div class="table-wrap"><table id="lifetimeTable"></table></div>
+  </div>
+  <div class="panel">
+    <div class="section-title"><div><h2>End-of-life routes</h2><p>Each product category must sum to 100% across incineration, landfill, recycling, reuse, and biological treatment.</p></div><button id="applyCountryWasteBtn" class="ghost">Apply selected-country waste preset</button></div>
+    <div class="table-wrap"><table id="eolTable"></table></div>
+  </div>
+</section>
+
+<section id="tab-treatment" class="tab-page">
+  <div class="panel"><div class="section-title"><div><h2>Treatment-facility transfer coefficients</h2><p>Static output vectors sum to 100%. Dynamic landfill release coefficients are annual stock-loss rates.</p></div><button id="resetFactorsBtn" class="ghost">Restore material defaults</button></div><div id="processFactors"></div></div>
+  <div class="panel"><div class="section-title"><div><h2 id="sludgeHeading">Selected-country sewage-sludge management routes</h2><p>Country presets are harmonized screening values and remain editable.</p></div><button id="resetSludgeBtn" class="ghost">Restore country sludge preset</button></div><div class="table-wrap"><table id="sludgeTable"></table></div></div>
+</section>
+
+<section id="tab-environment" class="tab-page">
+  <div class="panel">
+    <div class="section-title"><div><h2>Selected geographic-domain data</h2><p>These statistics are used directly in the calculation, rather than serving only as labels.</p></div></div>
+    <div id="regionDataTable" class="table-wrap"></div>
+  </div>
+  <div class="panel">
+    <div class="section-title"><div><h2>Environmental-media PEC settings</h2><p>Domain defaults are generated from wastewater flow, land area, and effective national freshwater flow, then remain fully editable.</p></div><button id="regionDefaultsBtn" class="ghost">Apply regional defaults</button></div>
+    <div id="environmentGrid" class="form-grid"></div>
+    <div class="notice">Air and surface-water PECs are annual flow-through screening concentrations. Static soil and sediment PECs use a steady-state residence-time approximation. Dynamic soil and sediment PECs accumulate annual screening stocks with first-order loss. This module is not a full multimedia fate model.</div>
+  </div>
+</section>
+
+
+<section id="tab-mixture" class="tab-page">
+  <div class="panel guide-panel">
+    <div class="section-title"><div><h2>Multiple nanomaterials and co-exposure</h2><p>Run material-specific MFA models in parallel within one geographic domain. Concentrations remain material resolved. A summed mass concentration is shown only when the selected tracking bases are compatible; it never implies toxicological equivalence.</p></div><button id="runMixtureBtn" class="primary">Run multi-material assessment</button></div>
+    <div class="workflow-steps mixture-workflow"><div class="workflow-step static-step"><span>1</span><b>Add components</b><small>Use bundled materials or capture a fully edited custom scenario.</small></div><div class="workflow-step static-step"><span>2</span><b>Define co-use</b><small>Use direct inputs for independent co-occurrence or formulation fractions for the same product/blend.</small></div><div class="workflow-step static-step"><span>3</span><b>Check comparability</b><small>Align tracking basis, PNEC medium, endpoint, assessment group, and evidence.</small></div><div class="workflow-step static-step"><span>4</span><b>Calculate and test</b><small>Inspect material-resolved PECs, HI, uncertainty, dominant contributors, and export files.</small></div></div>
+    <div id="mixtureStatus" class="next-action"></div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title"><div><h2>Material components</h2><p>Each component retains its own product categories, use releases, treatment coefficients, lifetime distribution, and nanoform assumptions. “Capture editor” replaces a component snapshot with the current single-material editor.</p></div><div class="button-row"><label class="inline-select">Bundled material<select id="mixtureMaterialPicker"></select></label><button id="addMixtureMaterialBtn" class="ghost">Add bundled material</button><button id="addCurrentScenarioBtn" class="ghost">Add current edited scenario</button></div></div>
+    <div id="mixtureComponentTable" class="table-wrap extra-wide"></div>
+    <div class="notice">All component inputs use the currently selected country/domain and market-input geography. In dynamic mode, component-specific growth and active years create separate trajectories.</div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title"><div><h2>Co-formulated product or blend groups</h2><p>A formulation group defines a total nanomaterial-blend input, shared use-release pattern, shared end-of-life routing, and shared product lifetime. Material fractions must total 100%; material-specific treatment coefficients remain independent.</p></div><button id="addFormulationBtn" class="ghost">Add formulation group</button></div>
+    <div id="formulationTable" class="table-wrap extra-wide"></div><div id="formulationValidation" class="validation ok"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Component-based mixture screening</h2>
+    <p>Enter only comparable PNECs. The app calculates component HQ = PEC/PNEC and sums HQs within a user-defined assessment group when the medium and endpoint descriptions are compatible. A blank or zero PNEC excludes that component-medium pair.</p>
+    <div id="mixtureHazardTable" class="table-wrap extra-wide"></div>
+    <details class="factor-group"><summary><span>Optional interaction-adjusted screening</span><span>β = 0 by default</span></summary><div class="factor-content"><p class="notice">Interaction coefficients are not predicted by the app. Enter β only for the specified material pair, medium, endpoint, concentration range, and nanoform when directly relevant evidence is available. Adjusted HI = HI + ΣβHQᵢHQⱼ.</p><div id="interactionTable" class="table-wrap tall"></div></div></details>
+    <label class="checkbox-row"><input id="allowIncompatibleSum" type="checkbox"><span>Override the tracking-basis compatibility block for total physical mass concentration (advanced; document the justification)</span></label>
+  </div>
+
+  <div id="mixtureResults" hidden>
+    <div id="mixtureKpis" class="kpi-grid"></div>
+    <div class="panel"><div class="section-title"><div><h2>Multi-material Sankey diagram</h2><p>Material-specific life-cycle pathways are retained and converge on common terminal destinations.</p></div><div class="button-row"><button id="exportMixtureJsonBtn" class="ghost">Export mixture project JSON</button><label class="button ghost file-label">Import mixture JSON<input id="importMixtureJson" type="file" accept="application/json" hidden></label><button id="exportMixtureCsvBtn" class="ghost">Export co-exposure CSV</button></div></div><div id="mixtureSankey" class="chart large"></div></div>
+    <div class="panel"><h2>Material-specific terminal releases and PECs</h2><div id="mixtureComponentResults" class="table-wrap"></div></div>
+    <div class="two-col">
+      <div class="panel"><div class="section-title"><div><h2>Environmental co-occurrence profile</h2><p id="mixtureSumWarning"></p></div><label class="inline-select">Medium<select id="mixtureMediumSelect"></select></label></div><div id="mixtureCooccurrenceChart" class="chart"></div><div id="mixtureCooccurrenceTable" class="table-wrap"></div></div>
+      <div class="panel"><h2>HQ and cumulative hazard index</h2><div id="mixtureHiChart" class="chart"></div><div id="mixtureHiTable" class="table-wrap"></div></div>
+    </div>
+    <div id="mixtureDynamicPanel" class="panel" hidden><h2>Dynamic co-exposure and mixture index</h2><div id="mixtureDynamicChart" class="chart large"></div><div id="mixtureDynamicHiChart" class="chart"></div><div id="mixtureDynamicTable" class="table-wrap tall"></div></div>
+    <div class="panel"><div class="section-title"><div><h2>Joint probabilistic mixture assessment</h2><p>Country-domain and environmental-capacity samples are shared across components. Direct material inputs are sampled separately, while components in the same formulation share the sampled blend-input factor.</p></div><button id="runMixtureMcBtn" class="primary">Run mixture uncertainty</button></div><div class="form-grid compact"><label>Iterations<input id="mixtureIterations" type="number" min="50" max="1000" value="250"></label><label>Seed<input id="mixtureSeed" type="number" value="52"></label><label>General CV<input id="mixtureRsd" type="number" min="0" step=".05" value="0.25"></label><label>Dynamic growth SD (% points)<input id="mixtureGrowthSd" type="number" min="0" step="1" value="5"></label></div><div id="mixtureMcStatus" class="mc-note"></div><div id="mixtureUncertaintyChart" class="chart large"></div><div id="mixtureUncertaintyTable" class="table-wrap"></div><div id="mixtureUncertaintyResults"></div></div>
+  </div>
+</section>
+
+<section id="tab-results" class="tab-page">
+  <div id="emptyResults" class="panel empty-state"><h2>No results are available.</h2><p>Complete the settings and run the selected model.</p></div>
+  <div id="resultsArea" hidden>
+    <div id="kpiGrid" class="kpi-grid"></div>
+    <div id="productSourcePanel" class="panel" hidden><div class="section-title"><div><h2>Product-source contribution to nanomaterial input</h2><p>Contributions are calculated from the active product inventory before use-stage release and end-of-life routing.</p></div></div><div id="productSourceChart" class="chart"></div><div id="productSourceTable" class="table-wrap"></div></div>
+
+    <div id="dynamicCharts" hidden>
+      <div class="panel"><h2>Annual input, use release, and end-of-life generation</h2><div id="dynamicFlowChart" class="chart"></div><div class="axis-caption">x-axis: Calendar year (year) · y-axis: Annual mass flow (kg/y)</div></div>
+      <div class="two-col">
+        <div class="panel"><h2>Anthropospheric and landfill stocks</h2><div id="stockChart" class="chart"></div><div class="axis-caption">x-axis: Calendar year (year) · y-axis: Stock mass (kg)</div></div>
+        <div class="panel"><h2>Annual environmental releases</h2><div id="releaseChart" class="chart"></div><div class="axis-caption">x-axis: Calendar year (year) · y-axis: Annual environmental release (kg/y)</div></div>
+      </div>
+      <div class="panel">
+        <div class="section-title"><div><h2>Annual environmental-media PEC</h2><p>Select a medium or treatment concentration to inspect its time series.</p></div><label class="inline-select">PEC metric<select id="dynamicPecMetricSelect"></select></label></div>
+        <div id="dynamicPecChart" class="chart"></div><div class="axis-caption">x-axis: Calendar year (year) · y-axis: Selected PEC or concentration metric (unit shown on axis)</div>
+        <div id="dynamicPecTable" class="table-wrap tall"></div>
+      </div>
+      <div class="panel"><div class="section-title"><div><h2>Annual Sankey diagram</h2><p>Select a year to inspect its regional mass flows.</p></div><label class="inline-select">Result year<select id="resultYearSelect"></select></label></div><div id="sankeyChart" class="chart large"></div></div>
+      <div class="panel"><div class="section-title"><div><h2>Annual dynamic summary</h2><p>Stocks are end-of-year values; releases and treatment inputs are annual flows.</p></div><button id="downloadDynamicCsvBtn" class="ghost">Download annual CSV</button></div><div id="dynamicTable" class="table-wrap tall"></div></div>
+    </div>
+
+    <div id="staticCharts">
+      <div class="panel"><div class="section-title"><div><h2>Sankey mass-flow diagram</h2><p>Annual mass flows for the selected geographic domain.</p></div><button id="downloadPngBtn" class="ghost">Download Sankey PNG</button></div><div id="staticSankeyChart" class="chart large"></div></div>
+      <div class="two-col"><div class="panel"><h2>Terminal destinations</h2><div id="terminalChart" class="chart"></div><div class="axis-caption">x-axis: Terminal destination mass flow (kg/y)</div></div><div class="panel"><h2>Environmental-media PECs</h2><div id="pecTable" class="table-wrap"></div></div></div>
+      <div class="panel"><h2>Terminal mass table</h2><div id="terminalTable" class="table-wrap"></div></div>
+      <div class="panel"><div class="section-title"><div><h2>Complete flow table</h2></div><button id="downloadCsvBtn" class="ghost">Download flow CSV</button></div><div id="flowTable" class="table-wrap tall"></div></div>
+    </div>
+    <div id="nanoformResultsPanel" class="panel nanoform-panel" hidden>
+      <div class="section-title">
+        <div><h2>Nanoform-state inventory and state-specific PECs</h2><p>State allocations preserve the base MFA mass and provide a screening interpretation of matrix-bound, particulate, dissolved, transformed, unresolved, and non-nano fractions.</p></div>
+        <button id="downloadNanoformCsvBtn" class="ghost">Download nanoform-state CSV</button>
+      </div>
+      <div id="nanoformResultsEmpty" class="notice"></div>
+      <div id="nanoformResultsBody" hidden>
+        <div id="nanoformKpis" class="kpi-grid nanoform-kpis"></div>
+        <div class="two-col result-grid">
+          <div><div id="nanoformStateChart" class="chart"></div><div class="axis-caption">State-resolved mass inventory (kg)</div></div>
+          <div id="nanoformStateTable" class="table-wrap"></div>
+        </div>
+        <div class="two-col result-grid">
+          <div><h3>Environmental release states</h3><div id="nanoformEnvironmentTable" class="table-wrap tall-sm"></div></div>
+          <div><h3>State-specific predicted environmental concentrations</h3><div id="nanoformPecTable" class="table-wrap tall-sm"></div></div>
+        </div>
+        <p id="nanoformResultNote" class="audit-note"></p>
+      </div>
+    </div>
+
+
+
+    <div id="dynamicFateResultsPanel" class="panel dynamic-fate-panel" hidden>
+      <div class="section-title">
+        <div><h2>Dynamic nanoform-resolved fate results</h2><p>Results report active-compartment stocks, state-specific predicted environmental concentrations, internal process transfers, and explicit external sinks.</p></div>
+        <button id="downloadDynamicFateCsvBtn" class="ghost">Download dynamic fate CSV</button>
+      </div>
+      <div id="dynamicFateResultsEmpty" class="notice"></div>
+      <div id="dynamicFateResultsBody" hidden>
+        <div id="dynamicFateKpis" class="kpi-grid"></div>
+        <div class="panel-inset"><div id="dynamicFateStockChart" class="chart"></div><div class="axis-caption">Active environmental stock by compartment</div></div>
+        <div class="responsive-result-grid">
+          <div><h3>Final compartment × form inventory</h3><div id="dynamicFateMatrixTable" class="table-wrap tall-sm"></div></div>
+          <div><h3>Final form-specific PEC</h3><div id="dynamicFatePecTable" class="table-wrap tall-sm"></div></div>
+        </div>
+        <div class="responsive-result-grid">
+          <div><h3>External sinks and steady-state fluxes</h3><div id="dynamicFateSinkTable" class="table-wrap tall-sm"></div></div>
+          <div><h3>Annual or convergence history</h3><div id="dynamicFateAnnualTable" class="table-wrap tall-sm"></div></div>
+        </div>
+        <div><h3>Correlated kinetic uncertainty</h3><div id="dynamicFateUncertaintyResults" class="table-wrap"></div></div>
+        <p id="dynamicFateResultNote" class="audit-note"></p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="button-row">
+        <button id="downloadResultsBtn" class="ghost">Download complete audit JSON</button>
+        <button id="downloadFateInventoryBtn" class="ghost">Download fate-input inventory CSV</button>
+        <button id="addComparisonBtn" class="ghost">Add current run to comparison</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="section-title"><div><h2>Scenario comparison</h2><p>Metric selection does not create a comparison by itself. Calculate a scenario and click <b>Add current run to comparison</b>; then change the scenario, calculate again, and add the second run.</p></div><div class="button-row"><label class="inline-select">Metric<select id="comparisonMetric"></select></label><button id="clearComparisonBtn" class="ghost">Clear</button></div></div>
+      <div class="comparison-guide"><b>Four-step comparison:</b> 1) Calculate scenario A → 2) Add current run → 3) Modify and calculate scenario B → 4) Add the second run and select a metric.</div>
+      <div id="comparisonStatus" class="next-action compact"></div>
+      <div id="comparisonChart" class="chart"></div>
+      <div id="comparisonTable" class="table-wrap"></div>
+    </div>
+  </div>
+</section>
+
+<section id="tab-uncertainty" class="tab-page">
+  <div class="panel">
+    <h2>Probabilistic simulation</h2>
+    <p>Compositional vectors are sampled with Dirichlet distributions. Positive parameters use lognormal distributions. Group-specific coefficients of variation are controlled in the <b>Evidence, QA and sensitivity</b> tab; the fallback CV below is used only when a group value is unavailable.</p>
+    <div class="form-grid compact"><label>Iterations<input id="mcIterations" type="number" min="100" max="1500" step="100" value="300"></label><label>Fallback coefficient of variation<input id="mcRsd" type="number" min="0.01" max="2" step="0.05" value="0.20"></label><label>Lifetime RSD<input id="lifetimeRsd" type="number" min="0.01" max="1" step="0.05" value="0.20"></label><label>Annual growth SD (percentage points)<input id="growthSd" type="number" min="0" max="20" step="0.5" value="1.5"></label><label>Seed<input id="mcSeed" type="number" value="42"></label></div>
+    <button id="runMcBtn" class="primary">Run probabilistic simulation</button><span id="mcStatus" class="small muted"></span>
+  </div>
+  <div id="mcResults" hidden>
+    <div id="staticMcResults"><div class="panel"><h2>Terminal destinations: P5–P50–P95</h2><div id="mcTerminalChart" class="chart"></div><div class="axis-caption">x-axis: Terminal destination mass flow (kg/y)</div><div id="mcTerminalTable" class="table-wrap"></div></div><div class="panel"><h2>Environmental-media PECs: P5–P50–P95</h2><div id="mcPecTable" class="table-wrap"></div></div></div>
+    <div id="dynamicMcResults" hidden><div class="panel"><div class="section-title"><div><h2>Dynamic uncertainty envelope</h2><p>Shaded area represents P5–P95; the line is P50.</p></div><label class="inline-select">Metric<select id="dynamicMetricSelect"></select></label></div><div id="dynamicMcChart" class="chart large"></div><div class="axis-caption">x-axis: Calendar year (year) · y-axis: Selected uncertainty metric (unit shown on axis)</div></div><div class="panel"><h2>Final-year uncertainty</h2><div id="dynamicMcTable" class="table-wrap"></div></div></div>
+  </div>
+</section>
+
+
+<section id="tab-quality" class="tab-page">
+  <div class="panel">
+    <div class="section-title"><div><h2>Model specification and reporting boundary</h2><p>These fields are included in every scenario and audit export. They make the accounting basis explicit rather than leaving it implicit in the interface.</p></div></div>
+    <div class="form-grid">
+      <label>Study title<input id="metadataStudyTitle" type="text" value="K-NanoMFA screening assessment"></label>
+      <label>Analyst or organisation<input id="metadataAnalyst" type="text" placeholder="Optional"></label>
+      <label>Assessment purpose<select id="metadataPurpose"><option>Screening exposure assessment</option><option>Inventory development</option><option>Scenario comparison</option><option>Research hypothesis testing</option></select></label>
+      <label>Tracked mass basis<select id="metadataTrackingBasis"><option>Mass of selected nanoform entering the technosphere</option><option>Mass of constituent element</option><option>Total material mass including transformed forms</option><option>User-defined tracking basis</option></select></label>
+      <label>System boundary<select id="metadataBoundary"><option>Market input through use, EoL, treatment and environmental release</option><option>Production gate through environmental release</option><option>Use and EoL only</option><option>User-defined system boundary</option></select></label>
+      <label>Accounting principle<select id="metadataAccounting"><option>Consumption-based market input</option><option>Territorial production input</option><option>Apparent consumption: production + imports − exports</option><option>User-defined accounting principle</option></select></label>
+    </div>
+    <label>Boundary notes and exclusions<textarea id="metadataNotes" rows="3" placeholder="State excluded life-cycle stages, trade assumptions, nanoform definitions, and known data gaps."></textarea></label>
+  </div>
+
+  <div class="panel">
+    <div class="section-title"><div><h2>Default data provenance register</h2><p>This table identifies where the active defaults came from and how strongly they apply to the selected material and geographic domain. Evidence class A is strongest; E denotes an expert screening assumption.</p></div><a class="button ghost" href="SOURCES.md" target="_blank" rel="noopener">Open source list</a></div>
+    <div class="evidence-legend"><span class="evidence-a">A · official statistic</span><span class="evidence-b">B · directly applicable peer-reviewed evidence</span><span class="evidence-c">C · peer-reviewed proxy</span><span class="evidence-d">D · harmonised regional proxy</span><span class="evidence-e">E · expert screening assumption</span></div>
+    <div id="provenanceSummary" class="quality-summary"></div>
+    <div id="provenanceTable" class="table-wrap"></div>
+    <p class="small muted">Changing an input makes it user-defined. Record the replacement source in the evidence/source note field below and update the quality score when appropriate.</p>
+  </div>
+
+  <div class="panel">
+    <div class="section-title"><div><h2>Literature benchmark validation</h2><p>Compare the current model output with published modeled or measured ranges. A match indicates order-of-magnitude plausibility only; it is not a calibration or proof of national representativeness.</p></div><button id="runBenchmarkBtn" class="primary">Evaluate current result</button></div>
+    <div id="benchmarkApplicability" class="notice"></div>
+    <div id="benchmarkSummary" class="quality-summary"></div>
+    <div id="benchmarkTable" class="table-wrap"></div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title"><div><h2>Data-quality matrix and group-specific uncertainty</h2><p>Scores range from 1 (poor) to 5 (strong). The coefficient of variation is applied to the corresponding group in probabilistic simulation.</p></div><div class="button-row"><button id="applyDqiCvBtn" class="ghost">Set CVs from quality scores</button><button id="resetQualityBtn" class="ghost">Restore QA defaults</button></div></div>
+    <div id="qualitySummary" class="quality-summary"></div>
+    <div class="table-wrap"><table id="qualityTable"></table></div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="section-title"><div><h2>Nanoform-resolved environmental releases</h2><p>Allocate air, water, and soil releases among free/aggregated nanoform, matrix-associated material, transformed or dissolved form, and unknown form. These are editable screening assumptions.</p></div><button id="resetReleaseFormsBtn" class="ghost">Restore material defaults</button></div>
+      <div class="table-wrap"><table id="releaseFormTable"></table></div>
+      <div id="releaseFormResults" class="table-wrap release-results"></div>
+    </div>
+    <div class="panel">
+      <h2>Model fitness flags</h2>
+      <div id="fitnessFlags"></div>
+      <p class="small muted">Flags are diagnostic. They do not convert a screening model into a validated national inventory or a mechanistic environmental fate model.</p>
+    </div>
+  </div>
+
+  <div class="panel nanoform-panel">
+    <div class="section-title">
+      <div><h2>Nanoform state tracking</h2><p>Optional v1.5 post-processing separates the conserved MFA mass into product-associated, particulate, dissolved, transformed, unresolved, and non-nano states. Disabling this option preserves the v1.4.1 output pathway.</p></div>
+      <label class="checkbox-row compact-check"><input id="nanoformEnabled" type="checkbox"><span>Enable state-resolved calculation</span></label>
+    </div>
+    <div id="nanoformStatus" class="notice nanoform-status"></div>
+    <div id="nanoformConfigDetails" hidden>
+      <div class="form-grid nanoform-controls">
+        <label>Material behavior preset<select id="nanoformMaterialPreset"></select></label>
+        <label>Product embedding preset<select id="nanoformEmbeddingPreset"></select></label>
+        <label>Evidence class<select id="nanoformEvidenceClass"><option>A</option><option>B</option><option>C</option><option>D</option><option selected>E</option></select></label>
+        <div class="button-row align-end"><button id="applyNanoformPresetBtn" class="primary">Apply state preset</button><button id="resetNanoformBtn" class="ghost">Restore v1.5 defaults</button></div>
+      </div>
+      <div class="two-col nanoform-config-grid">
+        <div>
+          <h3>Initial product-state allocation</h3>
+          <p class="small muted">The six editable fractions must sum to 100%. Non-nano or destroyed mass is generated only by treatment or transformation sinks.</p>
+          <div id="nanoformProductStateTable" class="table-wrap"></div>
+        </div>
+        <div>
+          <h3>Environmental-state mapping</h3>
+          <p class="small muted">The existing four release-form categories are subdivided into free versus aggregated and dissolved versus transformed particulate forms.</p>
+          <div id="nanoformMediumSplitTable" class="table-wrap"></div>
+        </div>
+      </div>
+      <details class="factor-group nanoform-details">
+        <summary>Review derived destination-state profiles</summary>
+        <div class="factor-content"><p class="small muted">These mass-normalized profiles are derived from the selected material and embedding presets. They do not replace process-specific experimental evidence.</p><div id="nanoformTransitionSummary" class="table-wrap"></div></div>
+      </details>
+      <div class="form-grid">
+        <label class="span-2">Source and evidence note<input id="nanoformSourceNote" type="text"></label>
+        <label class="span-2">Known limitations<textarea id="nanoformLimitations" rows="3"></textarea></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title"><div><h2>Mass-conserving screening sensitivity analysis</h2><p>Each parameter group is perturbed by the selected percentage. Compositional vectors are renormalised so the mass balance remains closed.</p></div><div class="button-row"><label class="inline-select">Output<select id="sensitivityMetric"></select></label><label class="inline-select">Perturbation (%)<input id="sensitivityDelta" type="number" min="1" max="50" step="1" value="10"></label><button id="runSensitivityBtn" class="primary">Run sensitivity</button></div></div>
+    <div id="sensitivityChart" class="chart large"></div>
+    <div id="sensitivityTable" class="table-wrap"></div>
+  </div>
+</section>
+
+
+<section id="tab-advanced" class="tab-page">
+  <div class="panel advanced-intro">
+    <h2>Advanced MFA, calibration, reconciliation, trade, and environmental fate</h2>
+    <p>These modules extend the screening workflow without replacing the transparent base model. Each module is optional, records its assumptions in the audit export, and reports its own diagnostics.</p>
+    <div class="tag-row"><span class="tag">Trade-balanced input</span><span class="tag">Stock-driven inverse MFA</span><span class="tag">Constrained reconciliation</span><span class="tag">Bayesian calibration</span><span class="tag">Process-based multimedia fate</span><span class="tag">Dynamic nanoform fate</span><span class="tag">Validation</span><span class="tag">Screening life-cycle burdens</span></div>
+  </div>
+
+
+
+  <div class="panel dynamic-fate-panel">
+    <div class="section-title">
+      <div><h2>Dynamic nanoform-resolved environmental fate</h2><p>The optional v2.0.1 engine propagates matrix-bound, free-particle, small-aggregate, large-aggregate, dissolved, transformed, and unresolved forms through air, water, soil, and active sediment. The default exact linear solver integrates the full coupled state-transition system without timestep-dependent cascade delay; the legacy substep solver remains available for comparison.</p></div>
+      <label class="checkbox-row compact-check"><input id="dynamicFateEnabled" type="checkbox"><span>Enable v2.0.1 kinetic fate calculation</span></label>
+    </div>
+    <div id="dynamicFateStatus" class="notice dynamic-fate-status"></div>
+    <div id="dynamicFateDetails" hidden>
+      <div class="form-grid dynamic-fate-controls">
+        <label>Kinetic behavior preset<select id="dynamicFatePreset"></select></label>
+        <label>Numerical solver<select id="dynamicFateSolver"><option value="exact_linear" selected>Exact coupled linear solver</option><option value="legacy_substep">Legacy competing-loss substeps</option></select></label>
+        <label>Tracking mass basis<select id="dynamicFateTrackingBasis"><option value="constituent_element_equivalent" selected>Constituent-element-equivalent mass</option><option value="pristine_nanoform">Pristine nanoform mass</option><option value="total_transformed_solid">Total transformed-solid mass</option><option value="composite_associated">Composite-associated ENM mass</option></select></label>
+        <label>Exact-solver tolerance<input id="dynamicFateSolverTolerance" type="number" min="0.00000000000001" max="0.0001" step="0.000000000001" value="0.00000000001"></label>
+        <label>Legacy substeps per year<input id="dynamicFateSubsteps" type="number" min="1" max="365" value="12"></label>
+        <label class="checkbox-row"><input id="dynamicFateLegacyAudit" type="checkbox"><span>Compare the legacy solver with doubled substeps</span></label>
+        <label>Water residence time (days)<input id="dynamicFateWaterResidence" type="number" min="0.01" step="0.1" value="30"></label>
+        <label>Large share of aggregated input (%)<input id="dynamicFateLargeAgg" type="number" min="0" max="100" step="1" value="35"></label>
+        <label>Maximum static iterations (years)<input id="dynamicFateMaxYears" type="number" min="1" max="5000" value="500"></label>
+        <label>Static convergence tolerance<input id="dynamicFateTolerance" type="number" min="0.000000000001" max="0.1" step="0.0000001" value="0.0000001"></label>
+        <label>Evidence class<select id="dynamicFateEvidenceClass"><option>A</option><option>B</option><option>C</option><option>D</option><option selected>E</option></select></label>
+        <div class="button-row align-end"><button id="applyDynamicFatePresetBtn" class="primary">Apply kinetic preset</button><button id="resetDynamicFateBtn" class="ghost">Restore v2.0.1 defaults</button></div>
+      </div>
+
+      <div class="dynamic-fate-overview-grid">
+        <div class="subpanel">
+          <h3>Initial active-compartment stocks</h3>
+          <div class="form-grid compact">
+            <label>Air (kg)<input id="dynamicFateInitial_air" type="number" min="0" step="any" value="0"></label>
+            <label>Water (kg)<input id="dynamicFateInitial_water" type="number" min="0" step="any" value="0"></label>
+            <label>Soil (kg)<input id="dynamicFateInitial_soil" type="number" min="0" step="any" value="0"></label>
+            <label>Sediment (kg)<input id="dynamicFateInitial_sediment" type="number" min="0" step="any" value="0"></label>
+          </div>
+          <h3>Initial-stock form profile</h3>
+          <div id="dynamicFateInitialProfileTable" class="table-wrap tall-sm"></div>
+        </div>
+        <div class="subpanel">
+          <h3>Storm-event remobilization</h3>
+          <label class="checkbox-row"><input id="dynamicFateStormEnabled" type="checkbox"><span>Apply episodic soil and sediment remobilization</span></label>
+          <div class="form-grid compact">
+            <label>Event years, comma separated<input id="dynamicFateStormYears" type="text" placeholder="e.g., 2028, 2032; blank = every year"></label>
+            <label>Soil → water per event (%)<input id="dynamicFateStormWater" type="number" min="0" max="100" step="0.1" value="1.5"></label>
+            <label>Soil → sediment per event (%)<input id="dynamicFateStormSediment" type="number" min="0" max="100" step="0.1" value="0.7"></label>
+            <label>Sediment → water per event (%)<input id="dynamicFateStormResuspension" type="number" min="0" max="100" step="0.1" value="0.5"></label>
+          </div>
+          <h3>External-model coupling</h3>
+          <label class="checkbox-row"><input id="dynamicFateExternalEnabled" type="checkbox"><span>Use imported state-resolved annual emissions instead of the internal nanoform release inventory</span></label>
+          <div class="button-row"><label class="button ghost file-label">Import coupling CSV<input id="importDynamicFateCsv" type="file" accept=".csv,text/csv" hidden></label><button id="downloadDynamicFateTemplateBtn" class="ghost">Download current coupling template</button></div>
+          <p id="dynamicFateExternalStatus" class="small muted"></p>
+        </div>
+      </div>
+
+      <details class="factor-group dynamic-fate-details" open>
+        <summary>Editable state-transition and intermedia rate constants</summary>
+        <div class="factor-content"><p class="small muted">Rates are first-order constants in y⁻¹. The exact solver integrates all active transfers simultaneously. The legacy solver is retained only for reproducibility and refinement auditing. External losses are reported separately from active stocks.</p><div id="dynamicFateRateTable" class="table-wrap tall"></div></div>
+      </details>
+
+      <details class="factor-group dynamic-fate-details">
+        <summary>Correlated kinetic-parameter uncertainty</summary>
+        <div class="factor-content">
+          <div class="form-grid compact">
+            <label class="checkbox-row"><input id="dynamicFateUncertaintyEnabled" type="checkbox"><span>Enable kinetic uncertainty</span></label>
+            <label>Iterations<input id="dynamicFateIterations" type="number" min="10" max="500" value="100"></label>
+            <label>Seed<input id="dynamicFateSeed" type="number" value="73"></label>
+            <label>Rate CV<input id="dynamicFateCv" type="number" min="0" step="0.05" value="0.25"></label>
+            <label>Between-group correlation<input id="dynamicFateCorrelation" type="number" min="-0.32" max="0.95" step="0.05" value="0.3"></label>
+            <button id="runDynamicFateUncertaintyBtn" class="primary align-end">Run kinetic uncertainty</button>
+          </div>
+          <p class="small muted">Rates are grouped as dissolution, aggregation/settling, transport/remobilization, and transformation. A Gaussian-copula lognormal multiplier applies the entered common between-group correlation.</p>
+        </div>
+      </details>
+
+      <div class="form-grid">
+        <label class="span-2">Source and evidence note<input id="dynamicFateSourceNote" type="text"></label>
+        <label class="span-2">Known limitations<textarea id="dynamicFateLimitations" rows="3"></textarea></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title"><div><h2>International trade and apparent-consumption accounting</h2><p>When enabled, the entered market input is interpreted as domestic production. Apparent consumption is calculated as production + imports − exports − technosphere inventory increase before geographic allocation.</p></div><label class="checkbox-row compact-check"><input id="tradeEnabled" type="checkbox"><span>Enable trade-balanced market input</span></label></div>
+    <div id="tradeStaticBox" class="form-grid compact">
+      <label>Total imports (kg/y)<input id="tradeImportsStatic" type="number" min="0" value="0"></label>
+      <label>Total exports (kg/y)<input id="tradeExportsStatic" type="number" min="0" value="0"></label>
+      <label>Technosphere inventory increase (kg/y)<input id="tradeInventoryStatic" type="number" value="0"></label>
+      <div id="tradeStaticSummary" class="effective-input"></div>
+    </div>
+    <div class="section-title subheading"><div><h3>Annual trade accounting</h3><p>Dynamic rows are generated from the current model horizon. Values are national totals before regional allocation.</p></div><button id="syncTradeYearsBtn" class="ghost">Synchronise years</button></div>
+    <div class="table-wrap tall-sm"><table id="tradeAnnualTable"></table></div>
+    <div class="section-title subheading"><div><h3>Bilateral partner matrix</h3><p>Partner shares allocate total imports and exports for transparent reporting. Import and export shares should each sum to 100%.</p></div><div class="button-row"><button id="addTradePartnerBtn" class="ghost">Add partner</button><button id="normalizeTradePartnersBtn" class="ghost">Normalize shares</button></div></div>
+    <div class="table-wrap"><table id="tradePartnerTable"></table></div>
+    <div id="tradeMatrixPreview" class="table-wrap"></div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title"><div><h2>Inflow-driven or stock-driven dynamic MFA</h2><p>Stock-driven mode infers the primary market input required to approach an entered end-of-year in-use stock trajectory. If inherited stock already exceeds the target, primary input is constrained to zero and the target gap is reported.</p></div><label class="inline-select">Dynamic driver<select id="dynamicDriver"><option value="inflow_driven">Inflow-driven cohorts</option><option value="stock_driven">Stock-driven inverse cohorts</option></select></label></div>
+    <div id="stockDrivenSettings">
+      <div class="form-grid compact"><label>Initial target stock (kg)<input id="targetStockInitial" type="number" min="0" value="2000"></label><label>Annual target-stock growth (%)<input id="targetStockGrowth" type="number" value="5" step="0.1"></label><label>Solver relative tolerance<input id="stockTolerance" type="number" min="0.000001" max="0.1" step="0.0001" value="0.0001"></label><button id="generateTargetStockBtn" class="ghost align-end">Generate target trajectory</button></div>
+      <div class="table-wrap tall-sm"><table id="targetStockTable"></table></div>
+      <div id="stockDrivenDiagnostics" class="table-wrap"></div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="section-title"><div><h2>Constrained data reconciliation</h2><p>Observed and modelled flows are combined using uncertainty weights and adjusted under one exact mass-balance equation. Non-negativity is enforced by an active-set projection.</p></div><div class="button-row"><button id="loadReconciliationBtn" class="ghost">Load current balance</button><button id="addReconciliationRowBtn" class="ghost">Add row</button></div></div>
+      <label>Reconciliation basis<select id="reconciliationMode"><option value="bayesian">Combine model priors and observations, then close balance</option><option value="observations">Observation-weighted least squares</option></select></label>
+      <div class="table-wrap tall"><table id="reconciliationTable"></table></div>
+      <button id="runReconciliationBtn" class="primary">Run reconciliation</button>
+      <div id="reconciliationSummary" class="quality-summary"></div><div id="reconciliationResults" class="table-wrap"></div>
+    </div>
+
+    <div class="panel">
+      <div class="section-title"><div><h2>Bayesian calibration against an observed result</h2><p>A scalar multiplier is calibrated by grid-based Bayesian updating. The likelihood and prior are lognormal, making the result appropriate for positive parameters and concentration observations.</p></div></div>
+      <div class="form-grid compact">
+        <label>Calibration parameter<select id="calibrationParameter"><option value="market_input">Market input</option><option value="use_release">All use-stage release factors</option><option value="wwtp_effluent">WWTP effluent transfer share</option><option value="river_flow">Receiving-water flow</option><option value="mean_lifetime">Mean product lifetime</option></select></label>
+        <label>Observed metric<select id="calibrationMetric"></select></label>
+        <label>Observed value<input id="calibrationObserved" type="number" min="0" value="1"></label>
+        <label>Observation CV<input id="calibrationObsCv" type="number" min="0.01" max="2" step="0.01" value="0.20"></label>
+        <label>Prior multiplier CV<input id="calibrationPriorCv" type="number" min="0.01" max="2" step="0.01" value="0.50"></label>
+        <label>Multiplier range<input id="calibrationRange" type="text" value="0.1, 5"></label>
+      </div>
+      <div class="button-row"><button id="runCalibrationBtn" class="primary">Run Bayesian calibration</button><button id="applyCalibrationBtn" class="ghost" disabled>Apply posterior mean</button></div>
+      <div id="calibrationChart" class="chart"></div><div id="calibrationResults" class="table-wrap"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title"><div><h2>Reduced-form mechanistic multimedia fate</h2><p>Air, water, soil, and active sediment are linked by first-order intermedia transfer, advective loss, burial, resuspension, and transformation. The module preserves mass at each numerical substep but is not a replacement for a calibrated SimpleBox4nano implementation.</p></div><div class="button-row"><select id="fatePreset"></select><button id="applyFatePresetBtn" class="ghost">Apply selected preset</button><button id="runFateBtn" class="primary">Run multimedia fate</button></div></div>
+    <div class="form-grid compact"><label>Water residence time (days)<input id="fateWaterResidence" type="number" min="0.01" value="30"></label><label>Substeps per year<input id="fateSubsteps" type="number" min="1" max="365" value="12"></label><label>Initial air stock (kg)<input id="fateInitialAir" type="number" min="0" value="0"></label><label>Initial water stock (kg)<input id="fateInitialWater" type="number" min="0" value="0"></label><label>Initial soil stock (kg)<input id="fateInitialSoil" type="number" min="0" value="0"></label><label>Initial sediment stock (kg)<input id="fateInitialSediment" type="number" min="0" value="0"></label></div>
+    <div class="table-wrap"><table id="fateRateTable"></table></div>
+    <div id="fateKpis" class="kpi-grid"></div><div id="fateChart" class="chart large"></div><div id="fateResults" class="table-wrap"></div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="section-title"><div><h2>Independent validation dataset</h2><p>Enter measured flow, stock, or concentration values. The app retrieves the matching model output and reports residuals, RMSE, bias, MAPE, uncertainty coverage, and reduced chi-square.</p></div><button id="addValidationRowBtn" class="ghost">Add observation</button></div>
+      <div class="table-wrap tall"><table id="validationDataTable"></table></div>
+      <button id="runValidationBtn" class="primary">Evaluate model fit</button><div id="validationStats" class="quality-summary"></div><div id="validationResults" class="table-wrap"></div>
+    </div>
+    <div class="panel">
+      <div class="section-title"><div><h2>Screening life-cycle burden indicator</h2><p>Editable climate factors estimate direct handling burdens and an avoided-primary-production credit. This is a co-indicator, not an ISO-compliant life-cycle assessment.</p></div><button id="runLcaBtn" class="primary">Calculate burden indicator</button></div>
+      <div class="table-wrap"><table id="lcaFactorTable"></table></div><div id="lcaKpis" class="kpi-grid"></div><div id="lcaResults" class="table-wrap"></div>
+    </div>
+  </div>
+</section>
+
+<section id="tab-method" class="tab-page">
+  <div class="panel prose">
+    <h2>Country and subnational-domain coupling</h2>
+    <p>The selected country is first resolved to a national domain. Korea additionally provides 17 bundled subnational domains, while user-defined countries may contain one national and multiple custom subnational domains. A national input may be allocated to a subnational domain by population, sewered population, or wastewater-flow share, or the entered value may be treated as a direct domain input. Country-domain wastewater flow, sludge production, effective freshwater flow, land area, and atmospheric volume control the PEC denominators. An optional country-waste coupling replaces material-specific EoL shares with an editable country screening preset.</p>
+    <h2>Static model</h2>
+    <p>The static model allocates the effective regional annual input to product categories, calculates use-stage releases, and sends all remaining mass to end-of-life treatment in the same year.</p>
+    <h2>Static probabilistic model</h2>
+    <p>The temporal boundary remains one year. Uncertain allocation, release, EoL, and treatment parameters are repeatedly sampled while preserving percentage-vector closure.</p>
+    <h2>Dynamic probabilistic model</h2>
+    <p>The dynamic model is inflow-driven and cohort-based. Annual effective regional inputs enter product-specific stocks. Residual product mass leaves stock according to a Weibull lifetime distribution. Recovered material may return as secondary input after a delay, reuse stock returns to EoL after a delay, and landfill releases are calculated from accumulated landfill stock.</p>
+    <div class="equations"><code>Regional input(t) = Entered input(t) × geographic allocation factor</code><code>F(a) = 1 − exp[−(a/λ)^k], λ = mean lifetime / Γ(1 + 1/k)</code><code>Environmental stock(t) = Environmental stock(t−1) × exp(−1/τ) + annual input(t)</code><code>PEC = environmental stock / receiving-medium mass</code></div>
+    <h2>v2.0.1 numerical-stability and interpretation update</h2><ul><li>The v1.5 state-resolved release inventory can be propagated through air, surface water, soil, and active sediment as matrix-bound, free-particle, small-aggregate, large-aggregate, dissolved, transformed-particulate, and unresolved forms.</li><li>The default exact coupled linear solver removes substep-dependent cascade delay; the previous substep solver remains available with an optional doubled-substep convergence audit. External losses are reported separately as advection, burial, irreversible retention, or transfer outside the selected tracking basis.</li><li>Static MFA emissions can be iterated to a screening steady state, whereas dynamic MFA emissions produce annual form- and compartment-resolved trajectories.</li><li>Storm-event remobilization, external annual-emission CSV coupling, and correlated kinetic uncertainty are optional.</li><li>Disabling the v2.0.1 engine preserves the v1.5 calculation pathway.</li></ul><div class="equations"><code>m_i(t + Δt) = m_i(t) + inputs − transfers − external sinks</code><code>dM/dt = A M + E(t)</code><code>M(t + Δt) = exp(AΔt)M(t) + integrated emissions</code></div><h2>v1.5 nanoform-state and responsive-interface extension</h2><ul><li>All v1.4.1 product-informed, custom-geography, uncertainty, mixture, advanced MFA, fate, validation, and export functions remain available.</li><li>An optional mass-conserving nanoform-state layer reports matrix-bound, free particulate, aggregated, dissolved, transformed particulate, unresolved, and non-nano/destroyed states.</li><li>State-specific PECs proportionally allocate the existing medium-specific PEC calculation and are reported as screening outputs rather than mechanistic predictions.</li><li>The interface uses responsive grids, bounded panels, horizontally contained tables, and plot resizing rules to avoid clipping and overlap across common screen widths.</li></ul><h2>v1.4 product-informed input extension</h2><ul><li>The legacy direct-nanomaterial input remains the default and reproduces previous-version behavior.</li><li>Product-informed mode derives nanomaterial input from direct ENM mass, product mass and ENM content, unit sales and unit mass, coated area and ENM loading, or product volume and ENM concentration.</li><li>Product-specific market growth, ENM-content change, and nano-enabled-share change generate annual dynamic input trajectories.</li><li>Product-specific input uncertainty and evidence metadata are stored in scenario and audit exports.</li><li>Calculated product contributions set product-allocation shares while use release, lifetime, treatment, circularity, uncertainty, advanced MFA, fate, validation, mixture, and custom-geography functions remain available.</li></ul><div class="equations"><code>ENM input = product mass × ENM content × nano-enabled product fraction</code><code>ENM input = unit sales × unit mass × ENM content × nano-enabled product fraction</code><code>ENM input = coated area × ENM loading × nano-enabled product fraction</code></div>
+    <h2>v1.3 interface and custom-geography extension</h2><ul><li>All v1.2.1 functions remain available through five guided stages or the All workspaces view.</li><li>Custom countries and national/subnational domains can be created, stored locally, exported, imported, and embedded in scenario JSON.</li><li>Custom waste and sewage-sludge presets remain editable and participate in deterministic, probabilistic, dynamic, mixture, advanced, validation, and export workflows.</li></ul><h2>Maintenance corrections inherited from v1.2.1</h2>
+    <ul><li>Negative annual growth is now calculated correctly and values below −100% are rejected.</li><li>Opening landfill stock is included in dynamic mass-balance accounting.</li><li>A 100% reuse route no longer loses mass when reuse stock matures.</li><li>Imported percentages, trajectories, environmental capacities, and mixture definitions receive stronger validation.</li><li>Bayesian calibration refreshes the visible input editors, material changes update the fate preset, and dynamic mixture results use the final-year primary input.</li><li>Table output escapes user-entered text by default.</li></ul>
+    <h2>Guidance, provenance, custom materials, and mixture additions in v1.2</h2>
+    <ul><li>A six-step guided workflow and context-sensitive next-action prompts reduce ambiguity in setup, comparison, and export.</li><li>A custom-material builder initializes from a transparent proxy template while keeping product, release, treatment, lifetime, uncertainty, evidence, and fate variables fully editable.</li><li>A multi-material project mode runs independent or co-formulated material components in parallel, retains material-specific mass flows, and calculates co-occurrence, HQ, cumulative HI, optional evidence-entered interaction adjustment, and joint uncertainty.</li><li>An on-screen provenance register identifies the source type and evidence class of active defaults.</li><li>A literature benchmark module compares current outputs with published order-of-magnitude ranges and reports applicability limits.</li><li>Explicit model specification and system-boundary metadata are saved with every run.</li><li>A pedigree-style data-quality matrix controls group-specific probabilistic uncertainty.</li><li>Mass-conserving sensitivity analysis identifies influential assumptions.</li><li>Environmental releases can be reported by generic nanoform state, including an explicit unknown fraction.</li><li>Completed runs can be compared within the same browser session, and a fate-input emission inventory can be exported.</li></ul>
+    <h2>Interpretation boundary</h2>
+    <ul><li>Bundled product shares, release factors, lifetimes, and transfer coefficients are screening priors, not measured national inventories.</li><li>Population- or flow-based geographic allocation is a transparent downscaling assumption, not a measured country or regional nanomaterial market inventory.</li><li>The base soil and sediment PECs remain screening stock calculations. The optional v2.0.1 engine resolves operational aggregation, dissolution, settling, resuspension, and transformation with coupled first-order kinetics, but does not reproduce site-specific geochemistry or hydrodynamics.</li><li>“Transformation / loss” leaves the selected nanoform tracking basis.</li></ul>
+    <h2>Advanced capabilities in v1.2</h2>
+    <ul><li>Trade-balanced apparent consumption with annual totals and bilateral partner allocation.</li><li>Stock-driven inverse cohort MFA with annual target-stock diagnostics.</li><li>Uncertainty-weighted constrained reconciliation and grid-based Bayesian scalar calibration.</li><li>A mass-conserving four-compartment multimedia fate model with intermedia transfer and external sinks.</li><li>User-supplied validation datasets and a screening climate-burden co-indicator.</li></ul>
+    <h2>Remaining scientific qualification</h2>
+    <ul><li>Both fate modules remain spatially aggregated and first-order. The v2.0.1 engine distinguishes free particles and two aggregate classes, but it does not solve continuous particle-size distributions, natural-colloid heteroaggregation kernels, pH-dependent dissolution chemistry, watershed hydraulics, or spatial river networks.</li><li>Trade accounting represents mass of the tracked nanoform and does not include a full multi-regional input–output supply chain.</li><li>The life-cycle burden module is an editable screening co-indicator, not a complete ISO 14040/14044 assessment.</li><li>Validation and calibration quality remain limited by the availability and comparability of measured nanoform data.</li></ul>
+    <h2>License, attribution, and research-use disclaimer</h2>
+    <p>K-NanoMFA is distributed under the MIT License. The software may be used, copied, modified, and redistributed free of charge, provided that the copyright and license notices are retained. Scientific publications and derivative tools should cite the software version and acknowledge the developer.</p>
+    <p><b>Research-use disclaimer:</b> K-NanoMFA provides screening-level material-flow and predicted environmental concentration estimates. Outputs depend on user inputs, bundled priors, structural assumptions, and uncertainty settings. They do not constitute regulatory, legal, engineering, environmental-compliance, health, or site-specific advice. Users are responsible for validating inputs, selecting appropriate assumptions, interpreting outputs, and independently verifying any decision based on the results.</p>
+    <p>To the maximum extent permitted by applicable law, the software is provided “as is,” without express or implied warranty. The author/developer shall not be liable for claims, inaccurate results, data loss, or direct, indirect, incidental, special, or consequential damages arising from use of, reliance on, or inability to use the software. Kwangwoon University is listed as the developer’s affiliation; this does not imply institutional endorsement or acceptance of liability.</p>
+  </div>
+</section>
+</div>
+</main>
+<footer class="site-footer">
+  <div class="footer-identity">
+    <strong>K-NanoMFA v2.0.1</strong>
+    <span>Initial release: 17 July 2026 · v1.4 release: 22 July 2026 · v1.4.1 maintenance release: 22 July 2026 · v1.5 release: 22 July 2026 · v2.0 release: 22 July 2026 · v2.0.1 maintenance release: 22 July 2026</span>
+    <span>Copyright © 2026 Prof. Younghun Kim, Kwangwoon University · <a href="mailto:korea1@kw.ac.kr">korea1@kw.ac.kr</a></span>
+    <span>Free and open-source software · <a href="LICENSE" target="_blank" rel="noopener">MIT License</a> · <a href="DISCLAIMER.md" target="_blank" rel="noopener">Full disclaimer</a> · <a href="CITATION.cff" target="_blank" rel="noopener">Citation metadata</a></span>
+  </div>
+  <details class="footer-disclaimer">
+    <summary>License and research-use disclaimer</summary>
+    <p>Free use, modification, and redistribution are permitted under the MIT License, provided that the copyright and license notices are retained.</p>
+    <p>This software provides screening-level MFA and PEC estimates. Results depend on user inputs, bundled priors, model structure, and uncertainty assumptions and require independent verification. They are not regulatory, legal, engineering, environmental-compliance, health, or site-specific advice. Users are solely responsible for input validation, interpretation, and decisions based on the outputs.</p>
+    <p>To the maximum extent permitted by applicable law, the software is provided “as is,” without warranty. The author/developer accepts no liability for claims, inaccurate results, data loss, or direct, indirect, incidental, special, or consequential damages arising from use of or reliance on the software. Kwangwoon University is identified as the developer’s affiliation and does not imply institutional endorsement or acceptance of liability.</p>
+  </details>
+</footer>
+<script src="data.js?v=2.0.1"></script><script src="engine.js?v=2.0.1"></script><script src="product_inventory.js?v=2.0.1"></script><script src="app.js?v=2.0.1"></script><script src="geography.js?v=2.0.1"></script><script src="advanced.js?v=2.0.1"></script>
+<script src="mixture.js?v=2.0.1"></script><script src="nanoform.js?v=2.0.1"></script><script src="dynamic_fate.js?v=2.0.1"></script>
+</body>
+</html>

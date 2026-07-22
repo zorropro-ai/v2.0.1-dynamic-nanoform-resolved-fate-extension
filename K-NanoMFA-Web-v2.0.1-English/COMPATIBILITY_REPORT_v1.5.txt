@@ -1,0 +1,44 @@
+K-NanoMFA v1.5 compatibility report
+
+HTML interface preservation
+- v1.4.1 unique element IDs: 307
+- v1.5 unique element IDs: 330
+- retained v1.4.1 IDs: 307
+- deleted v1.4.1 IDs: 0
+- added v1.5 IDs: 23
+- duplicate IDs in v1.5: 0
+
+File checksum comparison
+- data.js: IDENTICAL
+  v1.4.1: 118da713c97890c77cb1616fab27af1d5ba14bde6b51b5cc597f2aa69c721c74
+  v1.5  : 118da713c97890c77cb1616fab27af1d5ba14bde6b51b5cc597f2aa69c721c74
+- engine.js: IDENTICAL
+  v1.4.1: 39985b99b55894fbd67db0888152b4e6d386177f205d08a3819f9174e1d908f8
+  v1.5  : 39985b99b55894fbd67db0888152b4e6d386177f205d08a3819f9174e1d908f8
+- advanced.js: IDENTICAL
+  v1.4.1: e0c5260ec8fbb106d248f2c83ee90913edbc85c626cd6a32fd496e78ff151967
+  v1.5  : e0c5260ec8fbb106d248f2c83ee90913edbc85c626cd6a32fd496e78ff151967
+- product_inventory.js: CHANGED
+  v1.4.1: df231c10ae7804dc2f89d85b830833d1a5642859d4ce0ef33a39e9ede7126324
+  v1.5  : 990d0590af08d69c11d27aa3c6008f20b8b9708d53096aa808ced3d65104f9cb
+- geography.js: CHANGED
+  v1.4.1: ba17d7b739db24d6775bbd0edb36709fc6d79bf3acb73fd2443460245298cf5c
+  v1.5  : 1e4eb2a4823c60de1ac82d80d041532c27ace6f408bb79741b7daae4fc45453f
+- app.js: CHANGED
+  v1.4.1: 7fdea261bf498299212d11d5bf3a6fca32291ab960a10cadbee860cc1be3f2bc
+  v1.5  : 61590c9b7dd8882053d5892e4d699a5f63e71bbb27e880b12ba982eff20e4d4f
+- mixture.js: CHANGED
+  v1.4.1: 5f71aa4d052ea12c5fb6c9213bfbb2dc6675ed88103a53aff83fddb3819daa23
+  v1.5  : 06a3826992cedde42f1dd46d2b8603915042efaeefa916fdf29d2d6e22610c36
+- index.html: CHANGED
+  v1.4.1: 08d0cf0791e135166bd891139a5827e2fa9a3ca5d7931efef94b9006598b7425
+  v1.5  : b7663d77edf2a5f60ca4961a7f03d8cd1e2b7df7e5025a562433d5ab3ae7c6c7
+- styles.css: CHANGED
+  v1.4.1: fdac0718c1f22d4208a2eafa076e4b389d029e27cd47fe906af39e7586ac7df5
+  v1.5  : d98fba767637369744d520cabbd63f1e77014d76a06015b57b18c6a48b043a94
+
+Interpretation
+- data.js, engine.js, and advanced.js are expected to remain byte-identical; the original scientific MFA and advanced-module equations are therefore preserved.
+- product_inventory.js and geography.js retain their existing calculations; changes are limited to v1.5 export naming where applicable.
+- app.js, mixture.js, index.html, and styles.css intentionally changed to integrate the optional nanoform module, version metadata, scenario persistence, result rendering, and responsive interface.
+- nanoform.js is a new, optional post-processing module. It is disabled by default and does not alter legacy MFA results when inactive.

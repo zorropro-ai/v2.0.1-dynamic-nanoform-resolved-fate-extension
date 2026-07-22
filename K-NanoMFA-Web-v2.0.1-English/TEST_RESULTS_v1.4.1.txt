@@ -1,0 +1,33 @@
+K-NanoMFA v1.4.1 responsive-maintenance test results
+
+Scope
+- Corrected the custom country and geographic-domain manager layout in v1.4.
+- Preserved the v1.4 scientific core and product-informed input module.
+
+Structural checks
+- Added `geo-identity-grid` and `geo-domain-grid` classes to the custom geography editor markup.
+- Added responsive CSS rules for custom-country overflow prevention, grid contraction, and button wrapping.
+- Confirmed `data.js` and `engine.js` remain byte-identical to v1.4.
+- Confirmed the custom-geography panel now uses minmax(0, ...) grid tracks and overflow wrapping.
+
+Files intentionally changed
+- index.html
+- styles.css
+- app.js (version metadata only)
+- mixture.js (export filename/version metadata only)
+- README.md
+- CHANGELOG.md
+- MANUAL_ADDENDUM_v1.4.1.md
+
+Files preserved without scientific logic changes
+- data.js
+- engine.js
+- advanced.js
+- product_inventory.js
+- geography.js
+
+Expected UI outcome
+- The country identity section no longer clips the right edge.
+- The domain editor panel collapses cleanly to a single column on narrower widths.
+- Buttons and route-grid inputs wrap within the panel.
+- No scientific equations or parameter calculations were changed in this maintenance release.

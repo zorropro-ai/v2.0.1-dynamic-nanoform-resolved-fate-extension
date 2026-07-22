@@ -1,0 +1,18 @@
+'use strict';
+const D=require('./data.js');
+const E=require('./engine.js');
+const clone=E.deepClone;
+const base='nano-TiO2';
+const products=clone(D.MATERIAL_SCENARIOS[base].products);
+const eol=clone(D.MATERIAL_SCENARIOS[base].eol);
+const factors=clone(D.PROCESS_FACTOR_LIBRARY[base]);
+const lifetimes=clone(D.LIFETIME_DEFAULTS[base]);
+const region=D.REGION_DATA.find(r=>r.domain_id==='KR-national');
+const env={river_flow_m3_s:500,soil_area_ha:100000,soil_depth_m:.2,soil_bulk_density_kg_m3:1300,soil_residence_time_y:10,water_to_sediment_pct:20,sediment_area_km2:100,sediment_depth_m:.05,sediment_bulk_density_kg_m3:1300,sediment_residence_time_y:10,air_mixing_height_m:1000,air_turnovers_y:365};
+const sludge=clone(D.COUNTRY_SLUDGE_PRESETS.KR);
+const s=E.runStaticMFA({total:1000,products,eol,factors,sludge,region,env});
+if(Math.abs(s.mass_balance_closure_pct-100)>1e-7)throw new Error(`Custom static closure failed: ${s.mass_balance_closure_pct}`);
+const trajectory=E.buildTrajectory({start_year:2020,end_year:2030,initial_input_kg_y:100,annual_growth_pct:3});
+const d=E.runDynamicMFA({trajectory,products,eol,factors,sludge,region,env,lifetimes,dynamicSettings:{closed_loop_recycling_pct:30,recycling_delay_y:1,reuse_delay_y:3,initial_landfill_stock_kg:0,initial_soil_media_stock_kg:0,initial_sediment_media_stock_kg:0}});
+if(Math.abs(d.final.mass_balance_closure_pct-100)>1e-6)throw new Error(`Custom dynamic closure failed: ${d.final.mass_balance_closure_pct}`);
+console.log('Custom-material engine test passed.');

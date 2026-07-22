@@ -1,0 +1,51 @@
+K-NanoMFA v2.0.1 compatibility report
+Generated: 22 July 2026
+
+v2.0 HTML element IDs: 377 (377 unique)
+v2.0.1 HTML element IDs: 381 (381 unique)
+Removed v2.0 IDs: 0
+Added v2.0.1 IDs: 4
+Duplicate v2.0.1 IDs: 0
+
+Added IDs: dynamicFateLegacyAudit, dynamicFateSolver, dynamicFateSolverTolerance, dynamicFateTrackingBasis
+
+File checksum comparison against v2.0:
+data.js: IDENTICAL
+  v2.0  : 118da713c97890c77cb1616fab27af1d5ba14bde6b51b5cc597f2aa69c721c74
+  v2.0.1: 118da713c97890c77cb1616fab27af1d5ba14bde6b51b5cc597f2aa69c721c74
+engine.js: IDENTICAL
+  v2.0  : 39985b99b55894fbd67db0888152b4e6d386177f205d08a3819f9174e1d908f8
+  v2.0.1: 39985b99b55894fbd67db0888152b4e6d386177f205d08a3819f9174e1d908f8
+advanced.js: IDENTICAL
+  v2.0  : e0c5260ec8fbb106d248f2c83ee90913edbc85c626cd6a32fd496e78ff151967
+  v2.0.1: e0c5260ec8fbb106d248f2c83ee90913edbc85c626cd6a32fd496e78ff151967
+product_inventory.js: IDENTICAL
+  v2.0  : 4ec62b9fe345e57576a8a626fc5842528c60b4682e8383892bbdc859bb0385bb
+  v2.0.1: 4ec62b9fe345e57576a8a626fc5842528c60b4682e8383892bbdc859bb0385bb
+geography.js: IDENTICAL
+  v2.0  : 914a701711b61d8595f87b5beda6705eba568b450725eafe2b8f77bce3fd2621
+  v2.0.1: 914a701711b61d8595f87b5beda6705eba568b450725eafe2b8f77bce3fd2621
+mixture.js: CHANGED
+  v2.0  : 7a206d1e456d9edf2b4ccd6d2e3d151a78529f4bdedc736421c44f332e153a46
+  v2.0.1: 63f0c8ceabb4f9b8b616c8ea2ba04f00476635b3194b8dbb1ff0b29a8b586263
+nanoform.js: IDENTICAL
+  v2.0  : 48fce95b06d6a08bd50cb90f97440e80c5a4bc0f37be989c104863be4f9a6bb8
+  v2.0.1: 48fce95b06d6a08bd50cb90f97440e80c5a4bc0f37be989c104863be4f9a6bb8
+dynamic_fate.js: CHANGED
+  v2.0  : 778cc4605d7c93527efdee98c25f84ce481224764a55f46314159dbe4d27e3ac
+  v2.0.1: e8ebc4c5126452af73765b0913e419560a425107021ec433fc8e7493f757d6f3
+app.js: CHANGED
+  v2.0  : a29c5918f826a7397d9fe4017a0c764d426eb316a56dac5f320a81caa19b3d38
+  v2.0.1: 0cf94f1923104780b0d0b80e2c6b2e75d0f312b6c00f493796937cb9ec0c16a5
+index.html: CHANGED
+  v2.0  : 83a7df0ad91cf307674ba1c6483b4e0ded8bc458fb591107fcf6f046b78e0ec6
+  v2.0.1: 952da7505933778e93d58cb105fedabccdd455ed90ba8407359d6834b62f151d
+styles.css: IDENTICAL
+  v2.0  : cfe54e4e60df6b0c526f1d3fe59df35ad468f8598fb52deb3a11b9c8a4cb642c
+  v2.0.1: cfe54e4e60df6b0c526f1d3fe59df35ad468f8598fb52deb3a11b9c8a4cb642c
+
+Interpretation:
+- data.js, engine.js, and advanced.js remain byte-identical to v2.0.
+- nanoform.js remains unchanged; v2.0.1 modifications are confined to dynamic-fate numerical integration, UI integration, versioned exports, and documentation.
+- Existing v2.0 scenario fields are preserved. Missing v2.0.1 fields are initialized with exact-linear and constituent-element-equivalent defaults.
+- The dynamic-fate module remains disabled by default, preserving the previous base MFA pathway.

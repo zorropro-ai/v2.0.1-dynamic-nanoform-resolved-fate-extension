@@ -1,0 +1,101 @@
+{
+  "workspaces": 10,
+  "guided_stages": 5,
+  "legacy_static_closure_pct": 100.00000000000003,
+  "nanoform_static_closure_pct": 100,
+  "legacy_dynamic_closure_pct": 100,
+  "nanoform_dynamic_closure_pct": 100.00000000000003,
+  "responsive": [
+    {
+      "width": 1600,
+      "tabs": {
+        "model": 0,
+        "lifecycle": 0,
+        "results": 0,
+        "quality": 0,
+        "advanced": 0,
+        "mixture": 0
+      },
+      "custom_geography": {
+        "doc": 0,
+        "max": 0
+      }
+    },
+    {
+      "width": 1440,
+      "tabs": {
+        "model": 0,
+        "lifecycle": 0,
+        "results": 0,
+        "quality": 0,
+        "advanced": 0,
+        "mixture": 0
+      },
+      "custom_geography": {
+        "doc": 0,
+        "max": 0
+      }
+    },
+    {
+      "width": 1280,
+      "tabs": {
+        "model": 0,
+        "lifecycle": 0,
+        "results": 0,
+        "quality": 0,
+        "advanced": 0,
+        "mixture": 0
+      },
+      "custom_geography": {
+        "doc": 0,
+        "max": 0
+      }
+    },
+    {
+      "width": 1024,
+      "tabs": {
+        "model": 0,
+        "lifecycle": 0,
+        "results": 0,
+        "quality": 0,
+        "advanced": 0,
+        "mixture": 0
+      },
+      "custom_geography": {
+        "doc": 0,
+        "max": 0
+      }
+    },
+    {
+      "width": 768,
+      "tabs": {
+        "model": 0,
+        "lifecycle": 0,
+        "results": 0,
+        "quality": 0,
+        "advanced": 0,
+        "mixture": 0
+      },
+      "custom_geography": {
+        "doc": 0,
+        "max": 0
+      }
+    },
+    {
+      "width": 480,
+      "tabs": {
+        "model": 0,
+        "lifecycle": 0,
+        "results": 0,
+        "quality": 0,
+        "advanced": 0,
+        "mixture": 0
+      },
+      "custom_geography": {
+        "doc": 0,
+        "max": 0
+      }
+    }
+  ],
+  "status": "passed"
+}

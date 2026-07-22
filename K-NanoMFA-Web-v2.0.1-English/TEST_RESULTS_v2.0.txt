@@ -1,0 +1,155 @@
+K-NanoMFA v2.0 complete numerical and integration test results
+Generated: 22 July 2026
+
+===== test_engine.js =====
+KR Republic of Korea OK
+CN China OK
+US United States OK
+JP Japan OK
+DE Germany OK
+FR France OK
+GB United Kingdom OK
+IN India OK
+CA Canada OK
+AU Australia OK
+All country-domain, material, mass-balance and PEC tests passed.
+
+===== test_regression_v121.js =====
+v1.2.1 regression tests passed.
+
+===== test_product_inventory.js =====
+Product-informed static, dynamic, uncertainty, compatibility, and mass-balance tests passed. {
+  static_total_kg_y: 322.5,
+  final_dynamic_input_kg_y: 438.87588300000004
+}
+
+===== test_geography.js =====
+Custom-geography registry, validation, static MFA, dynamic MFA, mass-balance and PEC tests passed.
+
+===== test_custom_material.js =====
+Custom-material engine test passed.
+
+===== test_advanced.js =====
+Advanced reconciliation, stock-driven MFA, multimedia fate, and validation tests passed.
+
+===== test_mixture.js =====
+Multi-material deterministic, formulation, dynamic, and joint uncertainty tests passed. {
+  totalWater: 0.00019888282794918049,
+  hi: 0.005202337331693695,
+  P50: 0.005461293977629845
+}
+
+===== test_nanoform.js =====
+{
+  "static_closure_pct": 99.99999999999999,
+  "dynamic_closure_pct": 99.99999999999997,
+  "static_state_mass_kg": 999.9999999999999,
+  "dynamic_state_mass_kg": 10159.106127641486,
+  "state_count": 7,
+  "status": "passed"
+}
+
+===== test_dynamic_fate.js =====
+{
+  "static_closure_pct": 99.99999999999848,
+  "static_converged": true,
+  "static_iterations": 297,
+  "dynamic_closure_pct": 99.99999999999993,
+  "dynamic_years": 9,
+  "final_stock_kg": 793.8216305304715,
+  "external_rows": 3,
+  "uncertainty_iterations": 20,
+  "status": "passed"
+}
+
+===== test_browser_v20.py =====
+{
+  "workspaces": 10,
+  "guided_stages": 5,
+  "legacy_static_closure_pct": 100.00000000000003,
+  "nanoform_static_closure_pct": 100,
+  "dynamic_fate_static_closure_pct": 99.99999999999812,
+  "dynamic_fate_static_iterations": 295,
+  "legacy_dynamic_closure_pct": 100,
+  "dynamic_fate_dynamic_closure_pct": 100.00000000000003,
+  "dynamic_years": 7,
+  "uncertainty_iterations": 12,
+  "responsive": [
+    {
+      "width": 1600,
+      "tabs": {
+        "model": 0,
+        "results": 0,
+        "quality": 0,
+        "advanced": 0,
+        "mixture": 0
+      },
+      "custom_geography": {
+        "doc": 0,
+        "max": 0
+      }
+    },
+    {
+      "width": 1280,
+      "tabs": {
+        "model": 0,
+        "results": 0,
+        "quality": 0,
+        "advanced": 0,
+        "mixture": 0
+      },
+      "custom_geography": {
+        "doc": 0,
+        "max": 0
+      }
+    },
+    {
+      "width": 1024,
+      "tabs": {
+        "model": 0,
+        "lifecycle": 0,
+        "treatment": 0,
+        "environment": 0,
+        "results": 0,
+        "uncertainty": 0,
+        "quality": 0,
+        "advanced": 0,
+        "mixture": 0,
+        "method": 0
+      },
+      "custom_geography": {
+        "doc": 0,
+        "max": 0
+      }
+    },
+    {
+      "width": 768,
+      "tabs": {
+        "model": 0,
+        "results": 0,
+        "quality": 0,
+        "advanced": 0,
+        "mixture": 0
+      },
+      "custom_geography": {
+        "doc": 0,
+        "max": 0
+      }
+    },
+    {
+      "width": 480,
+      "tabs": {
+        "model": 0,
+        "results": 0,
+        "quality": 0,
+        "advanced": 0,
+        "mixture": 0
+      },
+      "custom_geography": {
+        "doc": 0,
+        "max": 0
+      }
+    }
+  ],
+  "status": "passed"
+}

@@ -1,0 +1,48 @@
+K-NanoMFA v2.0 compatibility report
+Generated: 22 July 2026
+
+v1.5 HTML element IDs: 330 (330 unique)
+v2.0 HTML element IDs: 377 (377 unique)
+Removed v1.5 IDs: 0
+Added v2.0 IDs: 47
+Duplicate v2.0 IDs: 0
+
+Added v2.0 IDs: applyDynamicFatePresetBtn, downloadDynamicFateCsvBtn, downloadDynamicFateTemplateBtn, dynamicFateAnnualTable, dynamicFateCorrelation, dynamicFateCv, dynamicFateDetails, dynamicFateEnabled, dynamicFateEvidenceClass, dynamicFateExternalEnabled, dynamicFateExternalStatus, dynamicFateInitialProfileTable, dynamicFateInitial_air, dynamicFateInitial_sediment, dynamicFateInitial_soil, dynamicFateInitial_water, dynamicFateIterations, dynamicFateKpis, dynamicFateLargeAgg, dynamicFateLimitations, dynamicFateMatrixTable, dynamicFateMaxYears, dynamicFatePecTable, dynamicFatePreset, dynamicFateRateTable, dynamicFateResultNote, dynamicFateResultsBody, dynamicFateResultsEmpty, dynamicFateResultsPanel, dynamicFateSeed, dynamicFateSinkTable, dynamicFateSourceNote, dynamicFateStatus, dynamicFateStockChart, dynamicFateStormEnabled, dynamicFateStormResuspension, dynamicFateStormSediment, dynamicFateStormWater, dynamicFateStormYears, dynamicFateSubsteps, dynamicFateTolerance, dynamicFateUncertaintyEnabled, dynamicFateUncertaintyResults, dynamicFateWaterResidence, importDynamicFateCsv, resetDynamicFateBtn, runDynamicFateUncertaintyBtn
+
+File checksum comparison against v1.5:
+data.js: IDENTICAL
+  v1.5: 118da713c97890c77cb1616fab27af1d5ba14bde6b51b5cc597f2aa69c721c74
+  v2.0: 118da713c97890c77cb1616fab27af1d5ba14bde6b51b5cc597f2aa69c721c74
+engine.js: IDENTICAL
+  v1.5: 39985b99b55894fbd67db0888152b4e6d386177f205d08a3819f9174e1d908f8
+  v2.0: 39985b99b55894fbd67db0888152b4e6d386177f205d08a3819f9174e1d908f8
+advanced.js: IDENTICAL
+  v1.5: e0c5260ec8fbb106d248f2c83ee90913edbc85c626cd6a32fd496e78ff151967
+  v2.0: e0c5260ec8fbb106d248f2c83ee90913edbc85c626cd6a32fd496e78ff151967
+product_inventory.js: CHANGED
+  v1.5: 990d0590af08d69c11d27aa3c6008f20b8b9708d53096aa808ced3d65104f9cb
+  v2.0: 4ec62b9fe345e57576a8a626fc5842528c60b4682e8383892bbdc859bb0385bb
+geography.js: CHANGED
+  v1.5: 1e4eb2a4823c60de1ac82d80d041532c27ace6f408bb79741b7daae4fc45453f
+  v2.0: 914a701711b61d8595f87b5beda6705eba568b450725eafe2b8f77bce3fd2621
+mixture.js: CHANGED
+  v1.5: 06a3826992cedde42f1dd46d2b8603915042efaeefa916fdf29d2d6e22610c36
+  v2.0: 7a206d1e456d9edf2b4ccd6d2e3d151a78529f4bdedc736421c44f332e153a46
+nanoform.js: CHANGED
+  v1.5: a75a5520de4fd5df5ae5b8cb53ed48105ee950c3c75e32c975827453d766a866
+  v2.0: 48fce95b06d6a08bd50cb90f97440e80c5a4bc0f37be989c104863be4f9a6bb8
+app.js: CHANGED
+  v1.5: 61590c9b7dd8882053d5892e4d699a5f63e71bbb27e880b12ba982eff20e4d4f
+  v2.0: a29c5918f826a7397d9fe4017a0c764d426eb316a56dac5f320a81caa19b3d38
+index.html: CHANGED
+  v1.5: b7663d77edf2a5f60ca4961a7f03d8cd1e2b7df7e5025a562433d5ab3ae7c6c7
+  v2.0: 83a7df0ad91cf307674ba1c6483b4e0ded8bc458fb591107fcf6f046b78e0ec6
+styles.css: CHANGED
+  v1.5: d98fba767637369744d520cabbd63f1e77014d76a06015b57b18c6a48b043a94
+  v2.0: cfe54e4e60df6b0c526f1d3fe59df35ad468f8598fb52deb3a11b9c8a4cb642c
+
+Interpretation:
+- data.js, engine.js, and advanced.js retain the v1.5 numerical implementation when their checksums are identical.
+- Dynamic nanoform-resolved fate is implemented in the new dynamic_fate.js module.
+- Existing module changes outside dynamic_fate.js are limited to v2.0 integration, scenario persistence, versioned export names, and refresh hooks.
+- The v2.0 module is disabled by default; older scenarios initialize it in the disabled state.
